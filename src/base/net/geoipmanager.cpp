@@ -29,6 +29,8 @@
 
 #include "geoipmanager.h"
 
+#include <memory>
+
 #include <QDateTime>
 #include <QHostAddress>
 #include <QLocale>
@@ -46,6 +48,14 @@
 const QString DATABASE_URL = u"https://download.db-ip.com/free/dbip-country-lite-%1.mmdb.gz"_s;
 const QString GEODB_FOLDER = u"GeoDB"_s;
 const QString GEODB_FILENAME = u"dbip-country-lite.mmdb"_s;
+
+namespace
+{
+    Path databaseFilePath()
+    {
+        return specialFolderLocation(SpecialFolder::Data) / Path(GEODB_FOLDER) / Path(GEODB_FILENAME);
+    }
+}
 
 using namespace Net;
 
@@ -86,11 +96,8 @@ void GeoIPManager::loadDatabase()
     delete m_geoIPDatabase;
     m_geoIPDatabase = nullptr;
 
-    const Path filepath = specialFolderLocation(SpecialFolder::Data)
-            / Path(GEODB_FOLDER) / Path(GEODB_FILENAME);
-
     QString error;
-    m_geoIPDatabase = GeoIPDatabase::load(filepath, error);
+    m_geoIPDatabase = GeoIPDatabase::load(databaseFilePath(), error);
     if (m_geoIPDatabase)
     {
         LogMsg(tr("IP geolocation database loaded. Type: %1. Build time: %2.")
@@ -140,6 +147,17 @@ QString GeoIPManager::lookup(const QHostAddress &hostAddr) const
         return m_geoIPDatabase->lookup(hostAddr);
 
     return {};
+}
+
+QStringList GeoIPManager::countries() const
+{
+    if (m_geoIPDatabase)
+        return m_geoIPDatabase->countries();
+
+    // The database is not kept in memory when resolving peer countries is disabled
+    QString error;
+    const std::unique_ptr<GeoIPDatabase> geoIPDatabase {GeoIPDatabase::load(databaseFilePath(), error)};
+    return geoIPDatabase ? geoIPDatabase->countries() : QStringList();
 }
 
 QString GeoIPManager::CountryName(const QString &countryISOCode)

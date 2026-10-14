@@ -35,6 +35,7 @@
 #include <algorithm>
 #include <chrono>
 
+#include <QAbstractItemView>
 #include <QAction>
 #include <QActionGroup>
 #include <QClipboard>
@@ -52,6 +53,7 @@
 #include <QOverload>
 #include <QProcess>
 #include <QPushButton>
+#include <QScrollBar>
 #include <QShortcut>
 #include <QSplitter>
 #include <QStatusBar>
@@ -67,6 +69,7 @@
 #include "base/bittorrent/sessionstatus.h"
 #include "base/global.h"
 #include "base/net/downloadmanager.h"
+#include "base/net/geoipmanager.h"
 #include "base/path.h"
 #include "base/plugins/pluginsengine.h"
 #include "base/preferences.h"
@@ -263,7 +266,15 @@ MainWindow::MainWindow(IGUIApplication *app, const WindowState initialState, con
 
     auto *spacer = new QWidget(this);
     spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    m_ui->toolBar->insertWidget(m_columnFilterAction, spacer);
+    QAction *spacerAction = m_ui->toolBar->insertWidget(m_columnFilterAction, spacer);
+
+    // Country selector, placed right after the "Options" button
+    m_countryComboBox = new QComboBox(this);
+    m_countryComboBox->setToolTip(tr("Country"));
+    m_countryComboBox->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
+    m_countryComboBox->setMinimumContentsLength(20);
+    populateCountryComboBox();
+    m_ui->toolBar->insertWidget(spacerAction, m_countryComboBox);
 
     // Transfer List tab
     m_transferListWidget = new TransferListWidget(app, this);
@@ -1891,6 +1902,33 @@ void MainWindow::updatePowerManagementState() const
 void MainWindow::applyTransferListFilter()
 {
     m_transferListWidget->applyFilter(m_columnFilterEdit->text(), m_columnFilterComboBox->currentData().value<TransferListModel::Column>());
+}
+
+void MainWindow::populateCountryComboBox()
+{
+    struct Country
+    {
+        QString code;
+        QString name;
+    };
+
+    const QStringList countryCodes = Net::GeoIPManager::instance()->countries();
+    QList<Country> countries;
+    countries.reserve(countryCodes.size());
+    for (const QString &code : countryCodes)
+        countries.append({code, Net::GeoIPManager::CountryName(code)});
+
+    std::sort(countries.begin(), countries.end(), [](const Country &left, const Country &right)
+    {
+        return (QString::localeAwareCompare(left.name, right.name) < 0);
+    });
+
+    for (const Country &country : asConst(countries))
+        m_countryComboBox->addItem(UIThemeManager::instance()->getFlagIcon(country.code), country.name, country.code);
+
+    // Make the popup list wide enough to show the longest country name in full
+    QAbstractItemView *view = m_countryComboBox->view();
+    view->setMinimumWidth(view->sizeHintForColumn(0) + view->verticalScrollBar()->sizeHint().width());
 }
 
 void MainWindow::refreshWindowTitle()

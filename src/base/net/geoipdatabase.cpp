@@ -32,6 +32,7 @@
 #include <QDebug>
 #include <QFile>
 #include <QHostAddress>
+#include <QSet>
 #include <QVariant>
 
 #include "base/global.h"
@@ -170,27 +171,61 @@ QString GeoIPDatabase::lookup(const QHostAddress &hostAddr) const
                 return {};
             }
             if (id > m_nodeCount)
-            {
-                QString country = m_countries.value(id);
-                if (country.isEmpty())
-                {
-                    const quint32 offset = id - m_nodeCount - sizeof(DATA_SECTION_SEPARATOR);
-                    quint32 tmp = offset + m_indexSize + sizeof(DATA_SECTION_SEPARATOR);
-                    const QVariant val = readDataField(tmp);
-                    if (val.userType() == QMetaType::QVariantHash)
-                    {
-                        country = val.toHash()[u"country"_s].toHash()[u"iso_code"_s].toString();
-                        m_countries[id] = country;
-                    }
-                }
-                return country;
-            }
+                return countryFromDataRecord(id);
 
             ptr = reinterpret_cast<const uchar *>(m_data.constData()) + (id * m_nodeSize);
         }
     }
 
     return {};
+}
+
+QStringList GeoIPDatabase::countries() const
+{
+    // Every record in the search tree that points past the tree itself refers to a data record
+    QSet<quint32> dataRecordIds;
+    const auto *data = reinterpret_cast<const uchar *>(m_data.constData());
+    for (quint32 node = 0; node < m_nodeCount; ++node)
+    {
+        const uchar *nodePtr = data + (node * m_nodeSize);
+        for (int side = 0; side < 2; ++side)
+        {
+            quint32 id = 0;
+            auto *idPtr = reinterpret_cast<uchar *>(&id);
+            memcpy(&idPtr[4 - m_recordBytes], (nodePtr + (side * m_recordBytes)), m_recordBytes);
+            fromBigEndian(idPtr, 4);
+
+            if (id > m_nodeCount)
+                dataRecordIds.insert(id);
+        }
+    }
+
+    QSet<QString> countryCodes;
+    for (const quint32 id : asConst(dataRecordIds))
+    {
+        const QString country = countryFromDataRecord(id);
+        if (!country.isEmpty())
+            countryCodes.insert(country);
+    }
+
+    return countryCodes.values();
+}
+
+QString GeoIPDatabase::countryFromDataRecord(const quint32 id) const
+{
+    QString country = m_countries.value(id);
+    if (country.isEmpty())
+    {
+        const quint32 offset = id - m_nodeCount - sizeof(DATA_SECTION_SEPARATOR);
+        quint32 tmp = offset + m_indexSize + sizeof(DATA_SECTION_SEPARATOR);
+        const QVariant val = readDataField(tmp);
+        if (val.userType() == QMetaType::QVariantHash)
+        {
+            country = val.toHash()[u"country"_s].toHash()[u"iso_code"_s].toString();
+            m_countries[id] = country;
+        }
+    }
+    return country;
 }
 
 #define CHECK_METADATA_REQ(key, type) \

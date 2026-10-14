@@ -30,6 +30,7 @@
 #pragma once
 
 #include <QObject>
+#include <QStringList>
 
 class QHostAddress;
 class QString;
@@ -51,6 +52,7 @@ namespace Net
         static GeoIPManager *instance();
 
         QString lookup(const QHostAddress &hostAddr) const;
+        QStringList countries() const;
 
         static QString CountryName(const QString &countryISOCode);
 

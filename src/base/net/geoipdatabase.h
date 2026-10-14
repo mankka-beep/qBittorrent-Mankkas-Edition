@@ -33,6 +33,7 @@
 #include <QCoreApplication>
 #include <QDateTime>
 #include <QHash>
+#include <QStringList>
 #include <QVariant>
 
 #include "base/pathfwd.h"
@@ -55,9 +56,12 @@ public:
     quint16 ipVersion() const;
     QDateTime buildEpoch() const;
     QString lookup(const QHostAddress &hostAddr) const;
+    QStringList countries() const;
 
 private:
     GeoIPDatabase(const QByteArray &data);
+
+    QString countryFromDataRecord(quint32 id) const;
 
     bool parseMetadata(const QVariantHash &metadata, QString &error);
     bool loadDB(QString &error) const;

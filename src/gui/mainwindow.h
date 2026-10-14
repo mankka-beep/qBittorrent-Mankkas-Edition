@@ -205,6 +205,7 @@ private:
     void showStatusBar(bool show);
     void showFiltersSidebar(bool show);
     void applyTransferListFilter();
+    void populateCountryComboBox();
     void refreshWindowTitle();
     void refreshTrayIconTooltip();
 
@@ -250,6 +251,7 @@ private:
     LineEdit *m_columnFilterEdit = nullptr;
     QAction *m_columnFilterAction = nullptr;
     QComboBox *m_columnFilterComboBox = nullptr;
+    QComboBox *m_countryComboBox = nullptr;
     // Widgets
     QAction *m_queueSeparator = nullptr;
     QAction *m_queueSeparatorMenu = nullptr;
