@@ -351,11 +351,6 @@ void PeerListWidget::banSelectedPeers()
         selectedIPs += ip;
     }
 
-    // Confirm before banning peer
-    const QMessageBox::StandardButton btn = QMessageBox::question(this, tr("Ban peer permanently")
-        , tr("Are you sure you want to permanently ban the selected peers?"));
-    if (btn != QMessageBox::Yes) return;
-
     for (const QString &ip : selectedIPs)
     {
         BitTorrent::Session::instance()->banIP(ip);
