@@ -160,6 +160,25 @@ QStringList GeoIPManager::countries() const
     return geoIPDatabase ? geoIPDatabase->countries() : QStringList();
 }
 
+QStringList GeoIPManager::lookupCountries(const QList<QHostAddress> &addresses) const
+{
+    // The database is not kept in memory when resolving peer countries is disabled
+    std::unique_ptr<GeoIPDatabase> fileDatabase;
+    const GeoIPDatabase *geoIPDatabase = m_geoIPDatabase;
+    if (!geoIPDatabase)
+    {
+        QString error;
+        fileDatabase.reset(GeoIPDatabase::load(databaseFilePath(), error));
+        geoIPDatabase = fileDatabase.get();
+    }
+
+    QStringList countries;
+    countries.reserve(addresses.size());
+    for (const QHostAddress &address : addresses)
+        countries.append(geoIPDatabase ? geoIPDatabase->lookup(address) : QString());
+    return countries;
+}
+
 QString GeoIPManager::CountryName(const QString &countryISOCode)
 {
     static const QHash<QString, QString> countries =

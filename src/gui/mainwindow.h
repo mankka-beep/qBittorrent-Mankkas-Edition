@@ -41,6 +41,7 @@
 class QCloseEvent;
 class QComboBox;
 class QFileSystemWatcher;
+class QPushButton;
 class QSplitter;
 class QString;
 class QTabWidget;
@@ -206,6 +207,8 @@ private:
     void showFiltersSidebar(bool show);
     void applyTransferListFilter();
     void populateCountryComboBox();
+    void banPeersFromSelectedCountry();
+    void showCenteredNotification(const QString &message);
     void refreshWindowTitle();
     void refreshTrayIconTooltip();
 
@@ -252,6 +255,7 @@ private:
     QAction *m_columnFilterAction = nullptr;
     QComboBox *m_columnFilterComboBox = nullptr;
     QComboBox *m_countryComboBox = nullptr;
+    QPushButton *m_banCountryButton = nullptr;
     // Widgets
     QAction *m_queueSeparator = nullptr;
     QAction *m_queueSeparatorMenu = nullptr;

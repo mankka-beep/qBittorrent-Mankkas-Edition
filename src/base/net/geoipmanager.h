@@ -53,6 +53,8 @@ namespace Net
 
         QString lookup(const QHostAddress &hostAddr) const;
         QStringList countries() const;
+        // Same as lookup() for each address, but also works when resolving peer countries is disabled
+        QStringList lookupCountries(const QList<QHostAddress> &addresses) const;
 
         static QString CountryName(const QString &countryISOCode);
 

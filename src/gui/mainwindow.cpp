@@ -38,6 +38,7 @@
 #include <QAbstractItemView>
 #include <QAction>
 #include <QActionGroup>
+#include <QApplication>
 #include <QClipboard>
 #include <QCloseEvent>
 #include <QComboBox>
@@ -45,6 +46,8 @@
 #include <QDesktopServices>
 #include <QFileDialog>
 #include <QFileSystemWatcher>
+#include <QFuture>
+#include <QHostAddress>
 #include <QLabel>
 #include <QMenu>
 #include <QMessageBox>
@@ -52,13 +55,17 @@
 #include <QMimeData>
 #include <QOverload>
 #include <QProcess>
+#include <QProxyStyle>
 #include <QPushButton>
+#include <QScreen>
 #include <QScrollBar>
+#include <QSet>
 #include <QShortcut>
 #include <QSplitter>
 #include <QStatusBar>
 #include <QString>
 #include <QTimer>
+#include <QToolTip>
 
 #ifdef Q_OS_WIN
 #include <QCryptographicHash>
@@ -66,7 +73,10 @@
 #endif
 
 #include "base/bittorrent/session.h"
+#include "base/bittorrent/peeraddress.h"
+#include "base/bittorrent/peerinfo.h"
 #include "base/bittorrent/sessionstatus.h"
+#include "base/bittorrent/torrent.h"
 #include "base/global.h"
 #include "base/net/downloadmanager.h"
 #include "base/net/geoipmanager.h"
@@ -140,6 +150,22 @@ namespace
     const QByteArray PYTHON_INSTALLER_SHA2_256 = QByteArrayLiteral("f4a7df6ab4fa375cd7296127ff6b9a14fbd1313f51864ce020185deba10144fa");
 #endif
 #endif // Q_OS_WIN
+
+    // Same look as the application style, but combo box popups are shown as a plain list
+    // with a scroll bar (instead of a menu that scrolls only with arrows at its top and bottom)
+    class ListPopupComboBoxStyle final : public QProxyStyle
+    {
+    public:
+        using QProxyStyle::QProxyStyle;
+
+        int styleHint(const StyleHint hint, const QStyleOption *option = nullptr, const QWidget *widget = nullptr
+                , QStyleHintReturn *returnData = nullptr) const override
+        {
+            if (hint == QStyle::SH_ComboBox_Popup)
+                return 0;
+            return QProxyStyle::styleHint(hint, option, widget, returnData);
+        }
+    };
 }
 
 MainWindow::MainWindow(IGUIApplication *app, const WindowState initialState, const QString &titleSuffix)
@@ -273,8 +299,19 @@ MainWindow::MainWindow(IGUIApplication *app, const WindowState initialState, con
     m_countryComboBox->setToolTip(tr("Country"));
     m_countryComboBox->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
     m_countryComboBox->setMinimumContentsLength(20);
+    auto *countryComboBoxStyle = new ListPopupComboBoxStyle(QApplication::style()->name());
+    countryComboBoxStyle->setParent(m_countryComboBox);
+    m_countryComboBox->setStyle(countryComboBoxStyle);
+    m_countryComboBox->setMaxVisibleItems(20);
+    m_countryComboBox->view()->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     populateCountryComboBox();
     m_ui->toolBar->insertWidget(spacerAction, m_countryComboBox);
+
+    m_banCountryButton = new QPushButton(tr("Ban"), this);
+    m_banCountryButton->setToolTip(tr("Permanently ban all connected peers from the selected country"));
+    m_banCountryButton->setEnabled(m_countryComboBox->count() > 0);
+    connect(m_banCountryButton, &QPushButton::clicked, this, &MainWindow::banPeersFromSelectedCountry);
+    m_ui->toolBar->insertWidget(spacerAction, m_banCountryButton);
 
     // Transfer List tab
     m_transferListWidget = new TransferListWidget(app, this);
@@ -1929,6 +1966,100 @@ void MainWindow::populateCountryComboBox()
     // Make the popup list wide enough to show the longest country name in full
     QAbstractItemView *view = m_countryComboBox->view();
     view->setMinimumWidth(view->sizeHintForColumn(0) + view->verticalScrollBar()->sizeHint().width());
+}
+
+void MainWindow::banPeersFromSelectedCountry()
+{
+    const QString countryCode = m_countryComboBox->currentData().toString();
+    if (countryCode.isEmpty())
+        return;
+
+    QList<QFuture<QList<BitTorrent::PeerInfo>>> peerInfoFutures;
+    for (const BitTorrent::Torrent *torrent : asConst(BitTorrent::Session::instance()->torrents()))
+        peerInfoFutures.append(torrent->fetchPeerInfo());
+
+    m_banCountryButton->setEnabled(false);
+    QtFuture::whenAll(peerInfoFutures.begin(), peerInfoFutures.end()).then(this
+        , [this, countryCode](const QList<QFuture<QList<BitTorrent::PeerInfo>>> &finishedFutures)
+    {
+        m_banCountryButton->setEnabled(true);
+
+        // Collect the connected peers' IPs, each once, skipping I2P peers and IPs that are already banned
+        const QStringList bannedIPs = BitTorrent::Session::instance()->bannedIPs();
+        QSet<QString> seenIPs;
+        QList<QHostAddress> peerAddresses;
+        for (const QFuture<QList<BitTorrent::PeerInfo>> &future : finishedFutures)
+        {
+            if (future.isCanceled())
+                continue;
+
+            const QList<BitTorrent::PeerInfo> peers = future.result();
+            for (const BitTorrent::PeerInfo &peer : peers)
+            {
+                if (peer.useI2PSocket())
+                    continue;
+
+                const QHostAddress &address = peer.address().ip;
+                const QString ip = address.toString();
+                if (address.isNull() || bannedIPs.contains(ip) || seenIPs.contains(ip))
+                    continue;
+
+                seenIPs.insert(ip);
+                peerAddresses.append(address);
+            }
+        }
+
+        const QStringList peerCountries = Net::GeoIPManager::instance()->lookupCountries(peerAddresses);
+        QStringList ipsToBan;
+        for (qsizetype i = 0; i < peerAddresses.size(); ++i)
+        {
+            if (peerCountries[i] == countryCode)
+                ipsToBan.append(peerAddresses[i].toString());
+        }
+
+        const QString countryName = Net::GeoIPManager::CountryName(countryCode);
+        if (!ipsToBan.isEmpty())
+        {
+            // Confirm before banning peers, like banning peers manually from the peer list does
+            const QMessageBox::StandardButton btn = QMessageBox::question(this, tr("Ban peer permanently")
+                , tr("Are you sure you want to permanently ban %1 connected peer(s) from %2?").arg(ipsToBan.size()).arg(countryName));
+            if (btn != QMessageBox::Yes)
+                return;
+
+            for (const QString &ip : asConst(ipsToBan))
+            {
+                BitTorrent::Session::instance()->banIP(ip);
+                // Same log entry (and translation) as banning a peer manually from the peer list
+                LogMsg(QCoreApplication::translate("PeerListWidget", "Peer \"%1\" is manually banned").arg(ip));
+            }
+        }
+
+        showCenteredNotification(tr("%1 peer(s) from %2 banned").arg(ipsToBan.size()).arg(countryName));
+    });
+}
+
+void MainWindow::showCenteredNotification(const QString &message)
+{
+    auto *notification = new QLabel(message, this, (Qt::ToolTip | Qt::FramelessWindowHint));
+    notification->setAttribute(Qt::WA_DeleteOnClose);
+    notification->setAttribute(Qt::WA_ShowWithoutActivating);
+    notification->setPalette(QToolTip::palette());
+    notification->setAutoFillBackground(true);
+    notification->setFrameStyle(QFrame::Box | QFrame::Plain);
+    notification->setAlignment(Qt::AlignCenter);
+    notification->setMargin(20);
+
+    QFont font = notification->font();
+    font.setPointSizeF(font.pointSizeF() * 1.5);
+    font.setBold(true);
+    notification->setFont(font);
+
+    notification->adjustSize();
+    const QRect screenArea = screen()->availableGeometry();
+    notification->move(screenArea.center() - notification->rect().center());
+    notification->show();
+
+    QTimer::singleShot(5s, notification, &QWidget::close);
 }
 
 void MainWindow::refreshWindowTitle()
