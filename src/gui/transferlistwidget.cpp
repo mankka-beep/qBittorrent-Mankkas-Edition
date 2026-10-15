@@ -51,6 +51,7 @@
 #include "base/logger.h"
 #include "base/path.h"
 #include "base/preferences.h"
+#include "base/settingvalue.h"
 #include "base/torrentfilter.h"
 #include "base/utils/compare.h"
 #include "base/utils/fs.h"
@@ -202,6 +203,18 @@ TransferListWidget::TransferListWidget(IGUIApplication *app, QWidget *parent)
     {
         if ((columnWidth(i) <= 0) && (!isColumnHidden(i)))
             resizeColumnToContents(i);
+    }
+
+    // The first time the bandwidth priority column ("#" with check boxes) appears, show it
+    // as the first column. After that it keeps the position and visibility the user gives it.
+    SettingValue<bool> bandwidthPriorityColumnPlaced {u"TransferList/BandwidthPriorityColumnPlaced"_s};
+    if (!bandwidthPriorityColumnPlaced)
+    {
+        setColumnHidden(TransferListModel::TR_BANDWIDTH_PRIORITY, false);
+        header()->moveSection(header()->visualIndex(TransferListModel::TR_BANDWIDTH_PRIORITY), 0);
+        resizeColumnToContents(TransferListModel::TR_BANDWIDTH_PRIORITY);
+        bandwidthPriorityColumnPlaced = true;
+        saveSettings();
     }
 
     setContextMenuPolicy(Qt::CustomContextMenu);

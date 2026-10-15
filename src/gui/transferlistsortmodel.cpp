@@ -270,6 +270,7 @@ int TransferListSortModel::compare(const QModelIndex &left, const QModelIndex &r
         return customCompare(leftValue.toInt(), rightValue.toInt());
 
     case TransferListModel::TR_PRIVATE:
+    case TransferListModel::TR_BANDWIDTH_PRIORITY:
         return compareAsBool(leftValue, rightValue);
 
     case TransferListModel::TR_PEERS:
