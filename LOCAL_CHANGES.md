@@ -21,6 +21,14 @@ To get the official program back completely: `git switch master`, then rebuild.
 
 ## Changes (newest first)
 
+### 4. No confirmation when banning peers from the Peers tab — commit `9a12f8fce` (2026-10-15)
+
+"Ban peer permanently" in the Peers tab (right-click menu or Delete key) bans the
+selected peers right away, without the "Are you sure…?" question. The execution log
+entry is unchanged. The country "Ban" button still asks first.
+
+- Changed: `src/gui/properties/peerlistwidget.cpp`
+
 ### 3. Bandwidth priority column ("#") — commit `6621860ac` (2026-10-15)
 
 A checkbox column "#" in the torrent list (tooltip: "Prioritized bandwidth").
