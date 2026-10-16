@@ -161,6 +161,7 @@ MainWindow::MainWindow(IGUIApplication *app, const WindowState initialState, con
     , m_preventTimer {new QTimer(this)}
     , m_storeExecutionLogEnabled {EXECUTIONLOG_SETTINGS_KEY(u"Enabled"_s)}
     , m_storeDownloadTrackerFavicon {SETTINGS_KEY(u"DownloadTrackerFavicon"_s)}
+    , m_storeBanCheckedCountries {SETTINGS_KEY(u"BanCountries/Checked"_s)}
     , m_storeExecutionLogTypes {EXECUTIONLOG_SETTINGS_KEY(u"Types"_s), Log::MsgType::ALL}
 #ifdef Q_OS_MACOS
     , m_badger {std::make_unique<MacUtils::Badger>()}
@@ -283,15 +284,19 @@ MainWindow::MainWindow(IGUIApplication *app, const WindowState initialState, con
     m_countryComboBox->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
     m_countryComboBox->setMinimumContentsLength(20);
     populateCountryComboBox();
+    // Countries stay checked across restarts
+    m_countryComboBox->setCheckedCountryCodes(m_storeBanCheckedCountries.get());
     m_ui->toolBar->insertWidget(spacerAction, m_countryComboBox);
 
     m_banCountryButton = new QPushButton(tr("Ban"), this);
     m_banCountryButton->setToolTip(tr("Permanently ban all connected peers from the checked countries"));
-    m_banCountryButton->setEnabled(false);
+    m_banCountryButton->setEnabled(!m_countryComboBox->checkedCountryCodes().isEmpty());
     connect(m_banCountryButton, &QPushButton::clicked, this, &MainWindow::banPeersFromCheckedCountries);
     connect(m_countryComboBox, &CountryComboBox::checkedCountriesChanged, this, [this]
     {
-        m_banCountryButton->setEnabled(!m_countryComboBox->checkedCountryCodes().isEmpty());
+        const QStringList codes = m_countryComboBox->checkedCountryCodes();
+        m_storeBanCheckedCountries = codes;
+        m_banCountryButton->setEnabled(!codes.isEmpty());
     });
     m_ui->toolBar->insertWidget(spacerAction, m_banCountryButton);
 

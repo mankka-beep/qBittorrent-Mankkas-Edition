@@ -44,6 +44,7 @@ public:
 
     void addCountry(const QIcon &flag, const QString &name, const QString &countryCode);
     QStringList checkedCountryCodes() const;
+    void setCheckedCountryCodes(const QStringList &countryCodes);
     QStringList checkedCountryNames() const;
 
 signals:

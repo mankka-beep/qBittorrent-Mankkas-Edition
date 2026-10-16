@@ -89,6 +89,18 @@ QStringList CountryComboBox::checkedCountryCodes() const
     return codes;
 }
 
+void CountryComboBox::setCheckedCountryCodes(const QStringList &countryCodes)
+{
+    for (int row = 0; row < count(); ++row)
+    {
+        const bool checked = countryCodes.contains(itemData(row).toString());
+        setItemData(row, (checked ? Qt::Checked : Qt::Unchecked), Qt::CheckStateRole);
+    }
+
+    updateToolTip();
+    update();
+}
+
 QStringList CountryComboBox::checkedCountryNames() const
 {
     QStringList names;
