@@ -21,6 +21,25 @@ To get the official program back completely: `git switch master`, then rebuild.
 
 ## Changes (newest first)
 
+### 9. Checked countries are remembered — commit `cf2fb468d` (2026-10-16)
+
+The countries checked in the country dropdown stay checked after closing and
+restarting qBittorrent, and after rebuilding it. They are saved every time a
+country is checked or unchecked. Ban is enabled at startup if any are checked.
+
+- Changed: `src/gui/countrycombobox.cpp/.h`, `src/gui/mainwindow.cpp/.h`
+- Settings key: `GUI\BanCountries\Checked` (list of country codes)
+- Undo with `git revert cf2fb468d`; the key can then be deleted.
+
+### 8. Idle force-started seeds keep blue arrows — commit `6f1ca312f` (2026-10-16)
+
+Fix for change 7: a force-started seeding torrent counts as "uploading" all the
+time, so it showed green arrows even when idle. Now it shows green only while
+something is actually being uploaded, otherwise the light blue idle arrows.
+
+- Changed: `src/gui/transferlistmodel.cpp`
+- Undo with `git revert 6f1ca312f` (revert before change 7).
+
 ### 7. Green arrows for actively uploading torrents — commit `80a680878` (2026-10-16)
 
 In the torrent list, torrents that are uploading right now show green up-arrows
@@ -40,7 +59,7 @@ Space) checks or unchecks it and keeps the list open. The closed dropdown shows
 them. "Ban" bans connected peers from all checked countries in one go (one
 confirmation, same log entry per IP); the notification shows the total, plus a line
 per country when several are checked. Ban is greyed out until a country is checked.
-Checked countries are not remembered after a restart.
+Checked countries were not remembered after a restart (fixed by change 9).
 
 - New files: `src/gui/countrycombobox.h`, `src/gui/countrycombobox.cpp` (the list's
   scroll-bar style moved here from `mainwindow.cpp`)
