@@ -769,7 +769,7 @@ void TransferListModel::loadUIThemeResources()
     m_queuedIcon = themeManager->getIcon(u"queued"_s);
     m_stalledDLIcon = themeManager->getIcon(u"stalledDL"_s);
     m_stalledUPIcon = themeManager->getIcon(u"stalledUP"_s);
-    m_uploadingIcon = themeManager->getIcon(u"upload"_s, u"uploading"_s);
+    m_uploadingIcon = themeManager->getIcon(u"uploading"_s);
 }
 
 QIcon TransferListModel::getIconByState(const BitTorrent::TorrentState state) const

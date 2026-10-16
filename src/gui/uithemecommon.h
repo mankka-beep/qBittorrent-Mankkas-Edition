@@ -211,6 +211,7 @@ inline QSet<QString> defaultUIThemeIcons()
         u"trackerless"_s,
         u"trackers"_s,
         u"upload"_s,
+        u"uploading"_s,
         u"view-categories"_s,
         u"view-preview"_s,
         u"view-refresh"_s,
