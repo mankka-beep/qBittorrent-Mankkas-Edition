@@ -21,6 +21,17 @@ To get the official program back completely: `git switch master`, then rebuild.
 
 ## Changes (newest first)
 
+### 7. Green arrows for actively uploading torrents — commit `80a680878` (2026-10-16)
+
+In the torrent list, torrents that are uploading right now show green up-arrows
+instead of blue, the same green as downloading torrents. Idle seeding torrents
+(nobody downloading from you) keep their light blue arrows. The upload speed in
+the status bar and the "Seeding" filter keep the original blue icon.
+
+- New file: `src/icons/uploading.svg` (copy of `upload.svg`, colour `#008000`)
+- Changed: `src/icons/icons.qrc`, `src/gui/uithemecommon.h`, `src/gui/transferlistmodel.cpp`
+- Undo with `git revert 80a680878`.
+
 ### 6. Check several countries, ban them all at once — commit `a177a36bb` (2026-10-16)
 
 The country dropdown has a checkbox left of each flag. Clicking a country (or pressing
