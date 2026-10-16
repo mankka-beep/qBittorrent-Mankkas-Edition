@@ -561,7 +561,13 @@ QVariant TransferListModel::data(const QModelIndex &index, const int role) const
         return internalValue(torrent, index.column(), true);
     case Qt::DecorationRole:
         if (index.column() == TR_NAME)
+        {
+            // A force-started seed stays "ForcedUploading" even when nothing is being uploaded;
+            // show it as idle (blue) unless it is actually uploading (green).
+            if ((torrent->state() == BitTorrent::TorrentState::ForcedUploading) && (torrent->uploadPayloadRate() <= 0))
+                return m_stalledUPIcon;
             return getIconByState(torrent->state());
+        }
         break;
     case Qt::ToolTipRole:
         switch (index.column())
