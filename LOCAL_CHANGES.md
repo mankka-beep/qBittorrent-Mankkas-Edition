@@ -21,6 +21,21 @@ To get the official program back completely: `git switch master`, then rebuild.
 
 ## Changes (newest first)
 
+### 6. Check several countries, ban them all at once — commit `a177a36bb` (2026-10-16)
+
+The country dropdown has a checkbox left of each flag. Clicking a country (or pressing
+Space) checks or unchecks it and keeps the list open. The closed dropdown shows
+"Select countries", the one checked country, or "N countries", and its tooltip lists
+them. "Ban" bans connected peers from all checked countries in one go (one
+confirmation, same log entry per IP); the notification shows the total, plus a line
+per country when several are checked. Ban is greyed out until a country is checked.
+Checked countries are not remembered after a restart.
+
+- New files: `src/gui/countrycombobox.h`, `src/gui/countrycombobox.cpp` (the list's
+  scroll-bar style moved here from `mainwindow.cpp`)
+- Changed: `src/gui/CMakeLists.txt`, `src/gui/mainwindow.cpp/.h`
+- Undo with `git revert a177a36bb`: the dropdown goes back to choosing one country.
+
 ### 5. Bandwidth priority column removed — commit `2364f9416` (2026-10-16)
 
 Reverts change 3 completely on request: the "#" checkbox column and
