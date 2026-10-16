@@ -48,7 +48,6 @@ class QTabWidget;
 class QTimer;
 
 class AboutDialog;
-class BandwidthPrioritizer;
 class DownloadFromURLDialog;
 class ExecutionLogWidget;
 class LineEdit;
@@ -256,7 +255,6 @@ private:
     QAction *m_columnFilterAction = nullptr;
     QComboBox *m_columnFilterComboBox = nullptr;
     QComboBox *m_countryComboBox = nullptr;
-    BandwidthPrioritizer *m_bandwidthPrioritizer = nullptr;
     QPushButton *m_banCountryButton = nullptr;
     // Widgets
     QAction *m_queueSeparator = nullptr;

@@ -93,7 +93,6 @@ public:
         TR_REANNOUNCE,
         TR_PRIVATE,
         TR_CREATE_DATE,
-        TR_BANDWIDTH_PRIORITY,
 
         NB_COLUMNS
     };
@@ -129,7 +128,6 @@ private:
     QString displayValue(const BitTorrent::Torrent *torrent, int column) const;
     QVariant internalValue(const BitTorrent::Torrent *torrent, int column, bool alt) const;
     QIcon getIconByState(BitTorrent::TorrentState state) const;
-    bool isBandwidthPrioritized(const BitTorrent::Torrent *torrent) const;
 
     using TorrentList = boost::multi_index_container<
         BitTorrent::Torrent *,

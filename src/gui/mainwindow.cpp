@@ -92,7 +92,6 @@
 #include "base/version.h"
 #include "aboutdialog.h"
 #include "autoexpandabledialog.h"
-#include "bandwidthprioritizer.h"
 #include "cookiesdialog.h"
 #include "desktopintegration.h"
 #include "downloadfromurldialog.h"
@@ -313,9 +312,6 @@ MainWindow::MainWindow(IGUIApplication *app, const WindowState initialState, con
     m_banCountryButton->setEnabled(m_countryComboBox->count() > 0);
     connect(m_banCountryButton, &QPushButton::clicked, this, &MainWindow::banPeersFromSelectedCountry);
     m_ui->toolBar->insertWidget(spacerAction, m_banCountryButton);
-
-    // Must exist before the transfer list, whose "#" column shows and changes its state
-    m_bandwidthPrioritizer = new BandwidthPrioritizer(this);
 
     // Transfer List tab
     m_transferListWidget = new TransferListWidget(app, this);
@@ -935,9 +931,6 @@ void MainWindow::cleanup()
         saveSettings();
         saveSplitterSettings();
     }
-
-    // Give the torrents their own speed limits back before the session saves them
-    m_bandwidthPrioritizer->restoreAllLimits();
 
     // delete RSSWidget explicitly to avoid crash in
     // handleRSSUnreadCountUpdated() at application shutdown

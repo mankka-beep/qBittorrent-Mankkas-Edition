@@ -42,7 +42,6 @@
 #include "base/utils/fs.h"
 #include "base/utils/misc.h"
 #include "base/utils/string.h"
-#include "bandwidthprioritizer.h"
 #include "uithememanager.h"
 
 using namespace Qt::Literals::StringLiterals;
@@ -133,9 +132,6 @@ TransferListModel::TransferListModel(QObject *parent)
     connect(Session::instance(), &Session::torrentAboutToBeRemoved, this, &TransferListModel::handleTorrentAboutToBeRemoved);
     connect(Session::instance(), &Session::torrentsUpdated, this, &TransferListModel::handleTorrentsUpdated);
 
-    if (const BandwidthPrioritizer *bandwidthPrioritizer = BandwidthPrioritizer::instance())
-        connect(bandwidthPrioritizer, &BandwidthPrioritizer::prioritizedChanged, this, &TransferListModel::handleTorrentStatusUpdated);
-
     connect(Session::instance(), &Session::torrentFinished, this, &TransferListModel::handleTorrentStatusUpdated);
     connect(Session::instance(), &Session::torrentMetadataReceived, this, &TransferListModel::handleTorrentStatusUpdated);
     connect(Session::instance(), &Session::torrentStarted, this, &TransferListModel::handleTorrentStatusUpdated);
@@ -201,7 +197,6 @@ QVariant TransferListModel::headerData(const int section, const Qt::Orientation 
             case TR_INFOHASH_V2: return tr("Info Hash v2", "i.e: torrent info hash v2");
             case TR_REANNOUNCE: return tr("Reannounce In", "Indicates the time until next trackers reannounce");
             case TR_PRIVATE: return tr("Private", "Flags private torrents");
-            case TR_BANDWIDTH_PRIORITY: return QChar(u'#');
             default: return {};
             }
         }
@@ -210,7 +205,6 @@ QVariant TransferListModel::headerData(const int section, const Qt::Orientation 
             switch (section)
             {
             case TR_POPULARITY: return tr("Ratio / Time Active (in months), indicates how popular the torrent is");
-            case TR_BANDWIDTH_PRIORITY: return tr("Prioritized bandwidth: checked torrents get the download and upload bandwidth first");
             default: return {};
             }
         }
@@ -539,8 +533,6 @@ QVariant TransferListModel::internalValue(const BitTorrent::Torrent *torrent, co
         return torrent->nextAnnounce();
     case TR_PRIVATE:
         return (torrent->hasMetadata() ? torrent->isPrivate() : QVariant());
-    case TR_BANDWIDTH_PRIORITY:
-        return isBandwidthPrioritized(torrent);
     }
 
     return {};
@@ -570,10 +562,6 @@ QVariant TransferListModel::data(const QModelIndex &index, const int role) const
     case Qt::DecorationRole:
         if (index.column() == TR_NAME)
             return getIconByState(torrent->state());
-        break;
-    case Qt::CheckStateRole:
-        if (index.column() == TR_BANDWIDTH_PRIORITY)
-            return isBandwidthPrioritized(torrent) ? Qt::Checked : Qt::Unchecked;
         break;
     case Qt::ToolTipRole:
         switch (index.column())
@@ -627,25 +615,11 @@ QVariant TransferListModel::data(const QModelIndex &index, const int role) const
 
 bool TransferListModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-    if (!index.isValid())
+    if (!index.isValid() || (role != Qt::DisplayRole))
         return false;
 
     BitTorrent::Torrent *const torrent = torrentHandle(index);
     if (!torrent)
-        return false;
-
-    if ((role == Qt::CheckStateRole) && (index.column() == TR_BANDWIDTH_PRIORITY))
-    {
-        BandwidthPrioritizer *bandwidthPrioritizer = BandwidthPrioritizer::instance();
-        if (!bandwidthPrioritizer)
-            return false;
-
-        // The row is refreshed through BandwidthPrioritizer::prioritizedChanged
-        bandwidthPrioritizer->setPrioritized(torrent, (value.value<Qt::CheckState>() == Qt::Checked));
-        return true;
-    }
-
-    if (role != Qt::DisplayRole)
         return false;
 
     // Category and Name columns can be edited
@@ -688,16 +662,7 @@ Qt::ItemFlags TransferListModel::flags(const QModelIndex &index) const
     if (!index.isValid())
         return Qt::NoItemFlags;
 
-    if (index.column() == TR_BANDWIDTH_PRIORITY)
-        return (QAbstractListModel::flags(index) | Qt::ItemIsUserCheckable);
-
     return QAbstractListModel::flags(index);
-}
-
-bool TransferListModel::isBandwidthPrioritized(const BitTorrent::Torrent *torrent) const
-{
-    const BandwidthPrioritizer *bandwidthPrioritizer = BandwidthPrioritizer::instance();
-    return bandwidthPrioritizer && bandwidthPrioritizer->isPrioritized(torrent);
 }
 
 BitTorrent::Torrent *TransferListModel::torrentHandle(const QModelIndex &index) const
