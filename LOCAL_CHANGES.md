@@ -21,6 +21,16 @@ To get the official program back completely: `git switch master`, then rebuild.
 
 ## Changes (newest first)
 
+### 5. Bandwidth priority column removed — commit `2364f9416` (2026-10-16)
+
+Reverts change 3 completely on request: the "#" checkbox column and
+`bandwidthprioritizer.h/.cpp` are gone, and the other files are back as before.
+No torrents were checked at the time, so every torrent already had its own speed
+limits. The feature's keys were removed from `qBittorrent.ini` (backup:
+`qBittorrent.ini.before-priority-removal.bak`). Change 4 is unaffected.
+
+To bring the feature back: `git revert 2364f9416`, then rebuild.
+
 ### 4. No confirmation when banning peers from the Peers tab — commit `9a12f8fce` (2026-10-15)
 
 "Ban peer permanently" in the Peers tab (right-click menu or Delete key) bans the
@@ -29,7 +39,7 @@ entry is unchanged. The country "Ban" button still asks first.
 
 - Changed: `src/gui/properties/peerlistwidget.cpp`
 
-### 3. Bandwidth priority column ("#") — commit `6621860ac` (2026-10-15)
+### 3. Bandwidth priority column ("#") — commit `6621860ac` (2026-10-15) — REMOVED in change 5
 
 A checkbox column "#" in the torrent list (tooltip: "Prioritized bandwidth").
 Checked torrents get download and upload bandwidth first. Several checked torrents
