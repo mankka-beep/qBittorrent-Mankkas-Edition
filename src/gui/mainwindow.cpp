@@ -55,7 +55,6 @@
 #include <QMimeData>
 #include <QOverload>
 #include <QProcess>
-#include <QProxyStyle>
 #include <QPushButton>
 #include <QScreen>
 #include <QScrollBar>
@@ -93,6 +92,7 @@
 #include "aboutdialog.h"
 #include "autoexpandabledialog.h"
 #include "cookiesdialog.h"
+#include "countrycombobox.h"
 #include "desktopintegration.h"
 #include "downloadfromurldialog.h"
 #include "executionlogwidget.h"
@@ -150,22 +150,6 @@ namespace
     const QByteArray PYTHON_INSTALLER_SHA2_256 = QByteArrayLiteral("f4a7df6ab4fa375cd7296127ff6b9a14fbd1313f51864ce020185deba10144fa");
 #endif
 #endif // Q_OS_WIN
-
-    // Same look as the application style, but combo box popups are shown as a plain list
-    // with a scroll bar (instead of a menu that scrolls only with arrows at its top and bottom)
-    class ListPopupComboBoxStyle final : public QProxyStyle
-    {
-    public:
-        using QProxyStyle::QProxyStyle;
-
-        int styleHint(const StyleHint hint, const QStyleOption *option = nullptr, const QWidget *widget = nullptr
-                , QStyleHintReturn *returnData = nullptr) const override
-        {
-            if (hint == QStyle::SH_ComboBox_Popup)
-                return 0;
-            return QProxyStyle::styleHint(hint, option, widget, returnData);
-        }
-    };
 }
 
 MainWindow::MainWindow(IGUIApplication *app, const WindowState initialState, const QString &titleSuffix)
@@ -295,22 +279,20 @@ MainWindow::MainWindow(IGUIApplication *app, const WindowState initialState, con
     QAction *spacerAction = m_ui->toolBar->insertWidget(m_columnFilterAction, spacer);
 
     // Country selector, placed right after the "Options" button
-    m_countryComboBox = new QComboBox(this);
-    m_countryComboBox->setToolTip(tr("Country"));
+    m_countryComboBox = new CountryComboBox(this);
     m_countryComboBox->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
     m_countryComboBox->setMinimumContentsLength(20);
-    auto *countryComboBoxStyle = new ListPopupComboBoxStyle(QApplication::style()->name());
-    countryComboBoxStyle->setParent(m_countryComboBox);
-    m_countryComboBox->setStyle(countryComboBoxStyle);
-    m_countryComboBox->setMaxVisibleItems(20);
-    m_countryComboBox->view()->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     populateCountryComboBox();
     m_ui->toolBar->insertWidget(spacerAction, m_countryComboBox);
 
     m_banCountryButton = new QPushButton(tr("Ban"), this);
-    m_banCountryButton->setToolTip(tr("Permanently ban all connected peers from the selected country"));
-    m_banCountryButton->setEnabled(m_countryComboBox->count() > 0);
-    connect(m_banCountryButton, &QPushButton::clicked, this, &MainWindow::banPeersFromSelectedCountry);
+    m_banCountryButton->setToolTip(tr("Permanently ban all connected peers from the checked countries"));
+    m_banCountryButton->setEnabled(false);
+    connect(m_banCountryButton, &QPushButton::clicked, this, &MainWindow::banPeersFromCheckedCountries);
+    connect(m_countryComboBox, &CountryComboBox::checkedCountriesChanged, this, [this]
+    {
+        m_banCountryButton->setEnabled(!m_countryComboBox->checkedCountryCodes().isEmpty());
+    });
     m_ui->toolBar->insertWidget(spacerAction, m_banCountryButton);
 
     // Transfer List tab
@@ -1961,18 +1943,21 @@ void MainWindow::populateCountryComboBox()
     });
 
     for (const Country &country : asConst(countries))
-        m_countryComboBox->addItem(UIThemeManager::instance()->getFlagIcon(country.code), country.name, country.code);
+        m_countryComboBox->addCountry(UIThemeManager::instance()->getFlagIcon(country.code), country.name, country.code);
 
     // Make the popup list wide enough to show the longest country name in full
     QAbstractItemView *view = m_countryComboBox->view();
     view->setMinimumWidth(view->sizeHintForColumn(0) + view->verticalScrollBar()->sizeHint().width());
 }
 
-void MainWindow::banPeersFromSelectedCountry()
+void MainWindow::banPeersFromCheckedCountries()
 {
-    const QString countryCode = m_countryComboBox->currentData().toString();
-    if (countryCode.isEmpty())
+    const QStringList checkedCountryCodes = m_countryComboBox->checkedCountryCodes();
+    if (checkedCountryCodes.isEmpty())
         return;
+
+    const QSet<QString> countryCodes {checkedCountryCodes.cbegin(), checkedCountryCodes.cend()};
+    const QStringList countryNames = m_countryComboBox->checkedCountryNames();
 
     QList<QFuture<QList<BitTorrent::PeerInfo>>> peerInfoFutures;
     for (const BitTorrent::Torrent *torrent : asConst(BitTorrent::Session::instance()->torrents()))
@@ -1980,7 +1965,7 @@ void MainWindow::banPeersFromSelectedCountry()
 
     m_banCountryButton->setEnabled(false);
     QtFuture::whenAll(peerInfoFutures.begin(), peerInfoFutures.end()).then(this
-        , [this, countryCode](const QList<QFuture<QList<BitTorrent::PeerInfo>>> &finishedFutures)
+        , [this, checkedCountryCodes, countryCodes, countryNames](const QList<QFuture<QList<BitTorrent::PeerInfo>>> &finishedFutures)
     {
         m_banCountryButton->setEnabled(true);
 
@@ -2011,18 +1996,28 @@ void MainWindow::banPeersFromSelectedCountry()
 
         const QStringList peerCountries = Net::GeoIPManager::instance()->lookupCountries(peerAddresses);
         QStringList ipsToBan;
+        QHash<QString, int> bannedPerCountry;
         for (qsizetype i = 0; i < peerAddresses.size(); ++i)
         {
-            if (peerCountries[i] == countryCode)
+            if (countryCodes.contains(peerCountries[i]))
+            {
                 ipsToBan.append(peerAddresses[i].toString());
+                ++bannedPerCountry[peerCountries[i]];
+            }
         }
 
-        const QString countryName = Net::GeoIPManager::CountryName(countryCode);
+        QString countriesText;
+        if (countryNames.size() == 1)
+            countriesText = countryNames.first();
+        else if (countryNames.size() <= 10)
+            countriesText = tr("%1 countries (%2)").arg(countryNames.size()).arg(countryNames.join(u", "));
+        else
+            countriesText = tr("%1 countries").arg(countryNames.size());
         if (!ipsToBan.isEmpty())
         {
-            // Confirm before banning peers, like banning peers manually from the peer list does
+            // Confirm before banning peers, like banning peers manually from the peer list did
             const QMessageBox::StandardButton btn = QMessageBox::question(this, tr("Ban peer permanently")
-                , tr("Are you sure you want to permanently ban %1 connected peer(s) from %2?").arg(ipsToBan.size()).arg(countryName));
+                , tr("Are you sure you want to permanently ban %1 connected peer(s) from %2?").arg(ipsToBan.size()).arg(countriesText));
             if (btn != QMessageBox::Yes)
                 return;
 
@@ -2034,7 +2029,24 @@ void MainWindow::banPeersFromSelectedCountry()
             }
         }
 
-        showCenteredNotification(tr("%1 peer(s) from %2 banned").arg(ipsToBan.size()).arg(countryName));
+        QString message = tr("%1 peer(s) banned").arg(ipsToBan.size());
+        if (countryNames.size() > 1)
+        {
+            // How many peers were banned from each checked country that had any, in the order of the list
+            QStringList perCountryLines;
+            for (const QString &code : checkedCountryCodes)
+            {
+                if (const int banned = bannedPerCountry.value(code); banned > 0)
+                    perCountryLines.append(tr("%1: %2").arg(Net::GeoIPManager::CountryName(code)).arg(banned));
+            }
+            if (!perCountryLines.isEmpty())
+                message += u'\n' + perCountryLines.join(u'\n');
+        }
+        else
+        {
+            message = tr("%1 peer(s) from %2 banned").arg(ipsToBan.size()).arg(countriesText);
+        }
+        showCenteredNotification(message);
     });
 }
 

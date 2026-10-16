@@ -48,6 +48,7 @@ class QTabWidget;
 class QTimer;
 
 class AboutDialog;
+class CountryComboBox;
 class DownloadFromURLDialog;
 class ExecutionLogWidget;
 class LineEdit;
@@ -207,7 +208,7 @@ private:
     void showFiltersSidebar(bool show);
     void applyTransferListFilter();
     void populateCountryComboBox();
-    void banPeersFromSelectedCountry();
+    void banPeersFromCheckedCountries();
     void showCenteredNotification(const QString &message);
     void refreshWindowTitle();
     void refreshTrayIconTooltip();
@@ -254,7 +255,7 @@ private:
     LineEdit *m_columnFilterEdit = nullptr;
     QAction *m_columnFilterAction = nullptr;
     QComboBox *m_columnFilterComboBox = nullptr;
-    QComboBox *m_countryComboBox = nullptr;
+    CountryComboBox *m_countryComboBox = nullptr;
     QPushButton *m_banCountryButton = nullptr;
     // Widgets
     QAction *m_queueSeparator = nullptr;
