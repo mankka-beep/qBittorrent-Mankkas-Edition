@@ -58,6 +58,7 @@
 #include "base/preferences.h"
 #include "base/utils/misc.h"
 #include "base/utils/string.h"
+#include "gui/bancounter.h"
 #include "gui/uithememanager.h"
 #include "gui/utils/keysequence.h"
 #include "peerlistsortmodel.h"
@@ -351,11 +352,18 @@ void PeerListWidget::banSelectedPeers()
         selectedIPs += ip;
     }
 
+    // Count each IP once, and only when it was not banned already
+    const QStringList bannedIPs = BitTorrent::Session::instance()->bannedIPs();
+    QSet<QString> newlyBannedIPs;
     for (const QString &ip : selectedIPs)
     {
+        if (!bannedIPs.contains(ip))
+            newlyBannedIPs.insert(ip);
         BitTorrent::Session::instance()->banIP(ip);
         LogMsg(tr("Peer \"%1\" is manually banned").arg(ip));
     }
+    BanCounter::addBanned(newlyBannedIPs.size());
+
     // Refresh list
     loadPeers(m_properties->getCurrentTorrent());
 }

@@ -65,6 +65,7 @@
 #include <QString>
 #include <QTimer>
 #include <QToolTip>
+#include <QVBoxLayout>
 
 #ifdef Q_OS_WIN
 #include <QCryptographicHash>
@@ -91,6 +92,7 @@
 #include "base/version.h"
 #include "aboutdialog.h"
 #include "autoexpandabledialog.h"
+#include "bancounter.h"
 #include "cookiesdialog.h"
 #include "countrycombobox.h"
 #include "desktopintegration.h"
@@ -2032,6 +2034,7 @@ void MainWindow::banPeersFromCheckedCountries()
                 // Same log entry (and translation) as banning a peer manually from the peer list
                 LogMsg(QCoreApplication::translate("PeerListWidget", "Peer \"%1\" is manually banned").arg(ip));
             }
+            BanCounter::addBanned(ipsToBan.size());
         }
 
         QString message = tr("%1 peer(s) banned").arg(ipsToBan.size());
@@ -2051,25 +2054,45 @@ void MainWindow::banPeersFromCheckedCountries()
         {
             message = tr("%1 peer(s) from %2 banned").arg(ipsToBan.size()).arg(countriesText);
         }
-        showCenteredNotification(message);
+        showCenteredNotification(message, tr("Today: %1").arg(BanCounter::bannedToday()));
     });
 }
 
-void MainWindow::showCenteredNotification(const QString &message)
+void MainWindow::showCenteredNotification(const QString &message, const QString &footer)
 {
-    auto *notification = new QLabel(message, this, (Qt::ToolTip | Qt::FramelessWindowHint));
+    auto *notification = new QFrame(this, (Qt::ToolTip | Qt::FramelessWindowHint));
     notification->setAttribute(Qt::WA_DeleteOnClose);
     notification->setAttribute(Qt::WA_ShowWithoutActivating);
     notification->setPalette(QToolTip::palette());
     notification->setAutoFillBackground(true);
     notification->setFrameStyle(QFrame::Box | QFrame::Plain);
-    notification->setAlignment(Qt::AlignCenter);
-    notification->setMargin(20);
 
     QFont font = notification->font();
     font.setPointSizeF(font.pointSizeF() * 1.5);
     font.setBold(true);
     notification->setFont(font);
+
+    auto *layout = new QVBoxLayout(notification);
+    layout->setContentsMargins(20, 20, 20, 20);
+    layout->setSpacing(12);
+
+    auto *messageLabel = new QLabel(message, notification);
+    messageLabel->setAlignment(Qt::AlignCenter);
+    layout->addWidget(messageLabel);
+
+    if (!footer.isEmpty())
+    {
+        // Solid line between the message and the footer
+        auto *line = new QFrame(notification);
+        line->setFrameShape(QFrame::HLine);
+        line->setFrameShadow(QFrame::Plain);
+        line->setLineWidth(1);
+        layout->addWidget(line);
+
+        auto *footerLabel = new QLabel(footer, notification);
+        footerLabel->setAlignment(Qt::AlignCenter);
+        layout->addWidget(footerLabel);
+    }
 
     notification->adjustSize();
     const QRect screenArea = screen()->availableGeometry();

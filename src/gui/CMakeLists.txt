@@ -46,6 +46,7 @@ add_library(qbt_gui STATIC
     addtorrentparamswidget.h
     advancedsettings.h
     autoexpandabledialog.h
+    bancounter.h
     banlistoptionsdialog.h
     color.h
     colorscheme.h
@@ -158,6 +159,7 @@ add_library(qbt_gui STATIC
     addtorrentparamswidget.cpp
     advancedsettings.cpp
     autoexpandabledialog.cpp
+    bancounter.cpp
     banlistoptionsdialog.cpp
     cookiesdialog.cpp
     cookiesmodel.cpp
