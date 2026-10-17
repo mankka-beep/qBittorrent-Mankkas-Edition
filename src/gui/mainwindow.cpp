@@ -304,10 +304,7 @@ MainWindow::MainWindow(IGUIApplication *app, const WindowState initialState, con
     m_banCountryButton = new QPushButton(tr("Ban"), this);
     m_banCountryButton->setToolTip(tr("Permanently ban all connected peers from the checked countries"));
     m_banCountryButton->setEnabled(!m_countryComboBox->checkedCountryCodes().isEmpty());
-    connect(m_banCountryButton, &QPushButton::clicked, this, [this]
-    {
-        banPeersFromCheckedCountries(true);
-    });
+    connect(m_banCountryButton, &QPushButton::clicked, this, &MainWindow::banPeersFromCheckedCountries);
     connect(m_countryComboBox, &CountryComboBox::checkedCountriesChanged, this, [this]
     {
         const QStringList codes = m_countryComboBox->checkedCountryCodes();
@@ -316,8 +313,8 @@ MainWindow::MainWindow(IGUIApplication *app, const WindowState initialState, con
     });
     m_ui->toolBar->insertWidget(spacerAction, m_banCountryButton);
 
-    // Auto Ban: red = off, green = on. When on, the ban runs right away and then once a minute,
-    // without the confirmation question. It always starts off.
+    // Auto Ban: red = off, green = on. When on, the ban runs right away and then once a minute.
+    // It always starts off.
     m_autoBanButton = new QPushButton(tr("Auto Ban"), this);
     m_autoBanButton->setCheckable(true);
     m_autoBanButton->setToolTip(tr("Red: off. Green: bans peers from the checked countries once a minute"));
@@ -328,16 +325,13 @@ MainWindow::MainWindow(IGUIApplication *app, const WindowState initialState, con
             " QPushButton:checked:hover { background-color: #43a047; }"_s);
     m_autoBanTimer = new QTimer(this);
     m_autoBanTimer->setInterval(1min);
-    connect(m_autoBanTimer, &QTimer::timeout, this, [this]
-    {
-        banPeersFromCheckedCountries(false);
-    });
+    connect(m_autoBanTimer, &QTimer::timeout, this, &MainWindow::banPeersFromCheckedCountries);
     connect(m_autoBanButton, &QPushButton::toggled, this, [this](const bool enabled)
     {
         if (enabled)
         {
             m_autoBanTimer->start();
-            banPeersFromCheckedCountries(false);
+            banPeersFromCheckedCountries();
         }
         else
         {
@@ -2001,7 +1995,7 @@ void MainWindow::populateCountryComboBox()
     view->setMinimumWidth(view->sizeHintForColumn(0) + view->verticalScrollBar()->sizeHint().width());
 }
 
-void MainWindow::banPeersFromCheckedCountries(const bool askForConfirmation)
+void MainWindow::banPeersFromCheckedCountries()
 {
     // A ban that is still collecting peers is not started again (Auto Ban runs every minute)
     if (m_banInProgress)
@@ -2021,7 +2015,7 @@ void MainWindow::banPeersFromCheckedCountries(const bool askForConfirmation)
     m_banInProgress = true;
     m_banCountryButton->setEnabled(false);
     QtFuture::whenAll(peerInfoFutures.begin(), peerInfoFutures.end()).then(this
-        , [this, askForConfirmation, checkedCountryCodes, countryCodes, countryNames](const QList<QFuture<QList<BitTorrent::PeerInfo>>> &finishedFutures)
+        , [this, checkedCountryCodes, countryCodes, countryNames](const QList<QFuture<QList<BitTorrent::PeerInfo>>> &finishedFutures)
     {
         m_banInProgress = false;
         m_banCountryButton->setEnabled(!m_countryComboBox->checkedCountryCodes().isEmpty());
@@ -2073,16 +2067,6 @@ void MainWindow::banPeersFromCheckedCountries(const bool askForConfirmation)
             countriesText = tr("%1 countries").arg(countryNames.size());
         if (!ipsToBan.isEmpty())
         {
-            // Confirm before banning peers, like banning peers manually from the peer list did.
-            // Auto Ban does not ask: turning it on is the confirmation.
-            if (askForConfirmation)
-            {
-                const QMessageBox::StandardButton btn = QMessageBox::question(this, tr("Ban peer permanently")
-                    , tr("Are you sure you want to permanently ban %1 connected peer(s) from %2?").arg(ipsToBan.size()).arg(countriesText));
-                if (btn != QMessageBox::Yes)
-                    return;
-            }
-
             for (const QString &ip : asConst(ipsToBan))
             {
                 BitTorrent::Session::instance()->banIP(ip);

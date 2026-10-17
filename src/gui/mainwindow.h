@@ -208,7 +208,7 @@ private:
     void showFiltersSidebar(bool show);
     void applyTransferListFilter();
     void populateCountryComboBox();
-    void banPeersFromCheckedCountries(bool askForConfirmation);
+    void banPeersFromCheckedCountries();
     void showCenteredNotification(const QString &message, const QString &footer = {});
     void refreshWindowTitle();
     void refreshTrayIconTooltip();
