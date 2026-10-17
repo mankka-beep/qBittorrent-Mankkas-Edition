@@ -21,6 +21,15 @@ To get the official program back completely: `git switch master`, then rebuild.
 
 ## Changes (newest first)
 
+### 13. No confirmation when pressing "Ban" — commit `49199e487` (2026-10-17)
+
+Pressing "Ban" bans the peers from the checked countries right away, without the
+"Are you sure…?" question, the same as Auto Ban. The log entries and the result box
+with "Today:" are unchanged. No ban anywhere in the program asks for confirmation now.
+
+- Changed: `src/gui/mainwindow.cpp/.h`
+- Undo with `git revert 49199e487`.
+
 ### 12. "Auto Ban" button — commit `fb363d923` (2026-10-17)
 
 An "Auto Ban" toggle button right of "Ban". Red = off, green = on; each press switches.
