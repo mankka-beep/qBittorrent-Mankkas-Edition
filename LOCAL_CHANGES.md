@@ -21,6 +21,21 @@ To get the official program back completely: `git switch master`, then rebuild.
 
 ## Changes (newest first)
 
+### 10. "Today:" ban counter in the ban notification — commit `455864bc6` (2026-10-17)
+
+The notification after pressing "Ban" has a solid line at the bottom and below it
+"Today: N", the number of peers banned today: with the Ban button plus peers banned
+by hand in the Peers tab. Each IP counts once, and IPs that were already banned don't
+count. The counter is saved, so it survives restarts and rebuilds, and starts again
+from 0 when the date changes.
+
+- New files: `src/gui/bancounter.h`, `src/gui/bancounter.cpp`
+- Changed: `src/gui/CMakeLists.txt`, `src/gui/mainwindow.cpp/.h`,
+  `src/gui/properties/peerlistwidget.cpp`
+- Settings in `qBittorrent.ini` under `[GUI]`: `BanCountries\TodayDate` (the date the
+  count belongs to) and `BanCountries\TodayCount`. Safe to delete after undoing.
+- Undo with `git revert 455864bc6`.
+
 ### 9. Checked countries are remembered — commit `cf2fb468d` (2026-10-16)
 
 The countries checked in the country dropdown stay checked after closing and
