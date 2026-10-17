@@ -21,6 +21,20 @@ To get the official program back completely: `git switch master`, then rebuild.
 
 ## Changes (newest first)
 
+### 12. "Auto Ban" button — commit `fb363d923` (2026-10-17)
+
+An "Auto Ban" toggle button right of "Ban". Red = off, green = on; each press switches.
+It always starts red (off) when the program starts. While it's on, the ban routine
+runs right away and then once a minute, exactly like pressing "Ban" (same log entries,
+same result box with "Today:"), except that it doesn't ask "Are you sure…?". Turning
+it on is the confirmation. A run is skipped if no country is checked or the previous
+ban is still collecting peers. The "already banned?" check now uses a set, so it stays
+fast with 10,000+ bans.
+
+- Changed: `src/gui/mainwindow.cpp/.h`
+- No settings stored.
+- Undo with `git revert fb363d923`.
+
 ### 11. "Total bans" button and window — commit `86cc8e87c` (2026-10-17)
 
 A "Total bans" button left of the "Filter torrents..." box opens a window listing
