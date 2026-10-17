@@ -118,6 +118,7 @@ add_library(qbt_gui STATIC
     torrentoptionsdialog.h
     torrentsharelimitswidget.h
     torrenttagsdialog.h
+    totalbansdialog.h
     trackerentriesdialog.h
     trackerlist/trackerlistitemdelegate.h
     trackerlist/trackerlistmodel.h
@@ -226,6 +227,7 @@ add_library(qbt_gui STATIC
     torrentoptionsdialog.cpp
     torrentsharelimitswidget.cpp
     torrenttagsdialog.cpp
+    totalbansdialog.cpp
     trackerentriesdialog.cpp
     trackerlist/trackerlistitemdelegate.cpp
     trackerlist/trackerlistmodel.cpp

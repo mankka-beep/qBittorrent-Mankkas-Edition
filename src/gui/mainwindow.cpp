@@ -112,6 +112,7 @@
 #include "statsdialog.h"
 #include "statusbar.h"
 #include "torrentcreatordialog.h"
+#include "totalbansdialog.h"
 #include "trackerlist/trackerlistwidget.h"
 #include "transferlistfilterswidget.h"
 #include "transferlistmodel.h"
@@ -266,9 +267,19 @@ MainWindow::MainWindow(IGUIApplication *app, const WindowState initialState, con
 
     m_columnFilterComboBox = new QComboBox;
 
+    // Shows the manually banned IP addresses per country
+    auto *totalBansButton = new QPushButton(tr("Total bans"));
+    totalBansButton->setToolTip(tr("Show how many banned IP addresses there are per country"));
+    connect(totalBansButton, &QPushButton::clicked, this, [this]
+    {
+        auto *dialog = new TotalBansDialog(this);
+        dialog->open();
+    });
+
     QHBoxLayout *columnFilterLayout = new QHBoxLayout;
     columnFilterLayout->setContentsMargins(0, 0, 0, 0);
     columnFilterLayout->addWidget(columnFilterSpacer);
+    columnFilterLayout->addWidget(totalBansButton);
     columnFilterLayout->addWidget(m_columnFilterEdit);
     columnFilterLayout->addWidget(new QLabel(tr("Filter by:")), 0);
     columnFilterLayout->addWidget(m_columnFilterComboBox, 0);
