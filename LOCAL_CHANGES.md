@@ -21,6 +21,21 @@ To get the official program back completely: `git switch master`, then rebuild.
 
 ## Changes (newest first)
 
+### 11. "Total bans" button and window — commit `86cc8e87c` (2026-10-17)
+
+A "Total bans" button left of the "Filter torrents..." box opens a window listing
+qBittorrent's manually banned IP addresses per country (flag, country, number of
+bans), sorted from the most bans to the fewest, with the total below and a Close
+button. Countries come from `dbip-country-lite.mmdb`; IPs it can't place are
+counted under "N/A". The button is in the same part of the toolbar as the filter
+box, so it's only shown on the Transfers tab. The window remembers its size.
+
+- New files: `src/gui/totalbansdialog.h`, `src/gui/totalbansdialog.cpp`
+- Changed: `src/gui/CMakeLists.txt`, `src/gui/mainwindow.cpp`
+- Setting in `qBittorrent.ini`: `TotalBansDialog\Size` (window size). Safe to delete
+  after undoing.
+- Undo with `git revert 86cc8e87c`.
+
 ### 10. "Today:" ban counter in the ban notification — commit `455864bc6` (2026-10-17)
 
 The notification after pressing "Ban" has a solid line at the bottom and below it
