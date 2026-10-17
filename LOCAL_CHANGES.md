@@ -21,6 +21,17 @@ To get the official program back completely: `git switch master`, then rebuild.
 
 ## Changes (newest first)
 
+### 14. "Select All" toolbar button — commit `7d1cab5af` (2026-10-17)
+
+A toolbar button left of the country dropdown, in the same style and size as the other
+toolbar buttons. It selects all torrents in the list, the same as Ctrl+A, switching to
+the Transfers tab first if another tab is open. Its icon is new: three highlighted list
+rows with ticked checkboxes, in qBittorrent's usual blue.
+
+- New file: `src/icons/select-all.svg`
+- Changed: `src/icons/icons.qrc`, `src/gui/uithemecommon.h`, `src/gui/mainwindow.cpp`
+- Undo with `git revert 7d1cab5af`.
+
 ### 13. No confirmation when pressing "Ban" — commit `49199e487` (2026-10-17)
 
 Pressing "Ban" bans the peers from the checked countries right away, without the
