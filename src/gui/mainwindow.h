@@ -208,7 +208,7 @@ private:
     void showFiltersSidebar(bool show);
     void applyTransferListFilter();
     void populateCountryComboBox();
-    void banPeersFromCheckedCountries();
+    void banPeersFromCheckedCountries(bool askForConfirmation);
     void showCenteredNotification(const QString &message, const QString &footer = {});
     void refreshWindowTitle();
     void refreshTrayIconTooltip();
@@ -257,6 +257,9 @@ private:
     QComboBox *m_columnFilterComboBox = nullptr;
     CountryComboBox *m_countryComboBox = nullptr;
     QPushButton *m_banCountryButton = nullptr;
+    QPushButton *m_autoBanButton = nullptr;
+    QTimer *m_autoBanTimer = nullptr;
+    bool m_banInProgress = false;
     // Widgets
     QAction *m_queueSeparator = nullptr;
     QAction *m_queueSeparatorMenu = nullptr;
