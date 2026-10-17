@@ -190,6 +190,7 @@ inline QSet<QString> defaultUIThemeIcons()
         u"rss_unread_article"_s,
         u"security-high"_s,
         u"security-low"_s,
+        u"select-all"_s,
         u"set-location"_s,
         u"slow"_s,
         u"slow_off"_s,

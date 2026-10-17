@@ -292,7 +292,19 @@ MainWindow::MainWindow(IGUIApplication *app, const WindowState initialState, con
     spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     QAction *spacerAction = m_ui->toolBar->insertWidget(m_columnFilterAction, spacer);
 
-    // Country selector, placed right after the "Options" button
+    // Toolbar button that selects all torrents, the same as Ctrl+A in the torrent list
+    auto *selectAllTorrentsAction = new QAction(UIThemeManager::instance()->getIcon(u"select-all"_s, u"edit-select-all"_s)
+            , tr("Select All"), this);
+    selectAllTorrentsAction->setToolTip(tr("Select all torrents (Ctrl+A)"));
+    connect(selectAllTorrentsAction, &QAction::triggered, this, [this]
+    {
+        m_tabs->setCurrentWidget(m_splitter);
+        m_transferListWidget->setFocus();
+        m_transferListWidget->selectAll();
+    });
+    m_ui->toolBar->insertAction(spacerAction, selectAllTorrentsAction);
+
+    // Country selector, placed right after the "Select All" button
     m_countryComboBox = new CountryComboBox(this);
     m_countryComboBox->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
     m_countryComboBox->setMinimumContentsLength(20);
