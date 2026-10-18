@@ -36,7 +36,7 @@ To get the official program back completely: `git switch master`, then rebuild.
 
 ## Changes (newest first)
 
-### 22. Named "Mankka's Edition", version v1.1.0 — commit `bc0208990` (2026-10-18)
+### 22. Named "Mankka's Edition", version v1.1.0 — commit `eff0c2c4e` (2026-10-18)
 
 The window title and the About dialog show "qBittorrent v1.1.0 Mankka's Edition"
 (previously "qBittorrent v1.0.0 Mankka © 2026"). The About dialog adds "Modifications
@@ -45,18 +45,18 @@ The version numbering rules above are written down in `src/base/version.h.in`. T
 and peers still see qBittorrent 5.4.0.
 
 - Changed: `src/base/version.h.in`, `src/gui/aboutdialog.cpp`
-- Undo with `git revert bc0208990`.
+- Undo with `git revert eff0c2c4e`.
 
-### 21. Sort the Progress column by the progress shown — commit `85c5f376f` (2026-10-18)
+### 21. Sort the Progress column by the progress shown — commit `ead06633d` (2026-10-18)
 
 Sorting by Progress now uses the value the bar shows: for a seed that is uploading, the
 highest progress of the peers it uploads to; for all other torrents, their own progress.
 Uploading seeds therefore move in the sorted list as their peers' progress changes.
 
 - Changed: `src/gui/transferlistsortmodel.cpp`
-- Undo with `git revert 85c5f376f` (sorting then uses the torrents' own progress again).
+- Undo with `git revert ead06633d` (sorting then uses the torrents' own progress again).
 
-### 20. Own version name, lighter green, peer progress on uploading seeds — commit `a58148118` (2026-10-18)
+### 20. Own version name, lighter green, peer progress on uploading seeds — commit `883f3e53f` (2026-10-18)
 
 - **Name:** the window title and the About dialog show "qBittorrent v1.0.0 Mankka © 2026"
   (`QBT_DISPLAY_NAME` / `QBT_MOD_VERSION` in `src/base/version.h.in`). The About dialog
@@ -73,9 +73,9 @@ Uploading seeds therefore move in the sorted list as their peers' progress chang
 - Changed: `src/base/version.h.in`, `src/gui/aboutdialog.cpp`, `src/gui/mainwindow.cpp`,
   `src/gui/transferlistmodel.cpp/.h`, `src/gui/transferlistdelegate.cpp`,
   `src/icons/uploading.svg`
-- Undo with `git revert a58148118`.
+- Undo with `git revert 883f3e53f`.
 
-### 19. "Unban" button in the "Total bans" window — commit `9a380867e` (2026-10-18)
+### 19. "Unban" button in the "Total bans" window — commit `8e4abf8a0` (2026-10-18)
 
 An "Unban" button in the lower left corner of the "Total bans" window (Close stays on the
 right). It's greyed out until a country is selected; several can be selected with Ctrl or
@@ -85,9 +85,9 @@ to the execution log, and recounts the list. Countries still checked in the drop
 can be banned again by Ban or Auto Ban.
 
 - Changed: `src/gui/totalbansdialog.cpp/.h`
-- Undo with `git revert 9a380867e`. IPs already unbanned stay unbanned.
+- Undo with `git revert 8e4abf8a0`. IPs already unbanned stay unbanned.
 
-### 18. Bans only apply to completed (seeding) torrents — commit `9daf34c95` (2026-10-18)
+### 18. Bans only apply to completed (seeding) torrents — commit `62f866961` (2026-10-18)
 
 Banned IPs are only blocked for torrents that are complete (seeding). A torrent that is
 still downloading ignores the ban list, so banned peers can connect to it. This uses
@@ -107,10 +107,10 @@ an IP filter file is enabled later, downloading torrents would ignore it too.
   1. In `TorrentImpl::updateIPFilterUsage()` change `const bool shouldApplyIPFilter = isFinished();`
      to `const bool shouldApplyIPFilter = true;`, rebuild and run qBittorrent for a minute with
      all torrents started.
-  2. Then `git checkout -- src/base/bittorrent/torrentimpl.cpp` and `git revert 9daf34c95`,
+  2. Then `git checkout -- src/base/bittorrent/torrentimpl.cpp` and `git revert 62f866961`,
      and rebuild.
 
-### 17. Real-time Auto Ban, 3-second box, country tooltips on flags — commit `82088a11e` (2026-10-18)
+### 17. Real-time Auto Ban, 3-second box, country tooltips on flags — commit `d25b056f4` (2026-10-18)
 
 - **Auto Ban is real-time.** While it's green, qBittorrent reports every new peer
   connection (incoming and outgoing) and a peer from a checked country is banned right
@@ -127,9 +127,9 @@ an IP filter file is enabled later, downloading torrents would ignore it too.
 - **Tooltips:** hovering over a flag in Execution Log or Blocked IPs shows the country name.
 - Changed: `src/base/bittorrent/session.h`, `sessionimpl.cpp/.h`,
   `src/gui/mainwindow.cpp/.h`, `src/gui/log/loglistview.cpp`
-- Undo with `git revert 82088a11e` (Auto Ban then runs once a minute again).
+- Undo with `git revert d25b056f4` (Auto Ban then runs once a minute again).
 
-### 16. Flags after banned IPs in the Execution Log tab — commit `53b90aeb7` (2026-10-18)
+### 16. Flags after banned IPs in the Execution Log tab — commit `0ef314032` (2026-10-18)
 
 In Execution Log → Execution Log, messages about banned peers show the IP's country
 flag right after the IP address, drawn the same way as in the Blocked IPs tab. The
@@ -138,9 +138,9 @@ messages recognized (also when translated) are `Peer "<ip>" is manually banned`
 `IP banned by libtorrent. IP: <ip>.`. Other messages are unchanged.
 
 - Changed: `src/gui/log/logmodel.cpp`, `src/gui/log/loglistview.cpp`
-- Undo with `git revert 53b90aeb7`.
+- Undo with `git revert 0ef314032`.
 
-### 15. Ban box in the lower left corner, flags in the Blocked IPs tab — commit `690d84d70` (2026-10-18)
+### 15. Ban box in the lower left corner, flags in the Blocked IPs tab — commit `13434abb2` (2026-10-18)
 
 - The 5-second result box after "Ban" / "Auto Ban" now appears in the lower left
   corner of the screen (above the taskbar) instead of the middle. The "Total bans"
@@ -151,9 +151,9 @@ messages recognized (also when translated) are `Peer "<ip>" is manually banned`
   Copying rows (Ctrl+C) still copies plain text.
 - Changed: `src/gui/mainwindow.cpp/.h`, `src/gui/log/logmodel.cpp/.h`,
   `src/gui/log/loglistview.cpp`
-- Undo with `git revert 690d84d70`.
+- Undo with `git revert 13434abb2`.
 
-### 14. "Select All" toolbar button — commit `7d1cab5af` (2026-10-17)
+### 14. "Select All" toolbar button — commit `781539377` (2026-10-17)
 
 A toolbar button left of the country dropdown, in the same style and size as the other
 toolbar buttons. It selects all torrents in the list, the same as Ctrl+A, switching to
@@ -162,18 +162,18 @@ rows with ticked checkboxes, in qBittorrent's usual blue.
 
 - New file: `src/icons/select-all.svg`
 - Changed: `src/icons/icons.qrc`, `src/gui/uithemecommon.h`, `src/gui/mainwindow.cpp`
-- Undo with `git revert 7d1cab5af`.
+- Undo with `git revert 781539377`.
 
-### 13. No confirmation when pressing "Ban" — commit `49199e487` (2026-10-17)
+### 13. No confirmation when pressing "Ban" — commit `0ea10457b` (2026-10-17)
 
 Pressing "Ban" bans the peers from the checked countries right away, without the
 "Are you sure…?" question, the same as Auto Ban. The log entries and the result box
 with "Today:" are unchanged. No ban anywhere in the program asks for confirmation now.
 
 - Changed: `src/gui/mainwindow.cpp/.h`
-- Undo with `git revert 49199e487`.
+- Undo with `git revert 0ea10457b`.
 
-### 12. "Auto Ban" button — commit `fb363d923` (2026-10-17)
+### 12. "Auto Ban" button — commit `4f79c30aa` (2026-10-17)
 
 An "Auto Ban" toggle button right of "Ban". Red = off, green = on; each press switches.
 It always starts red (off) when the program starts. While it's on, the ban routine
@@ -185,9 +185,9 @@ fast with 10,000+ bans.
 
 - Changed: `src/gui/mainwindow.cpp/.h`
 - No settings stored.
-- Undo with `git revert fb363d923`.
+- Undo with `git revert 4f79c30aa`.
 
-### 11. "Total bans" button and window — commit `86cc8e87c` (2026-10-17)
+### 11. "Total bans" button and window — commit `a121c123c` (2026-10-17)
 
 A "Total bans" button left of the "Filter torrents..." box opens a window listing
 qBittorrent's manually banned IP addresses per country (flag, country, number of
@@ -200,9 +200,9 @@ box, so it's only shown on the Transfers tab. The window remembers its size.
 - Changed: `src/gui/CMakeLists.txt`, `src/gui/mainwindow.cpp`
 - Setting in `qBittorrent.ini`: `TotalBansDialog\Size` (window size). Safe to delete
   after undoing.
-- Undo with `git revert 86cc8e87c`.
+- Undo with `git revert a121c123c`.
 
-### 10. "Today:" ban counter in the ban notification — commit `455864bc6` (2026-10-17)
+### 10. "Today:" ban counter in the ban notification — commit `e4947c303` (2026-10-17)
 
 The notification after pressing "Ban" has a solid line at the bottom and below it
 "Today: N", the number of peers banned today: with the Ban button plus peers banned
@@ -215,9 +215,9 @@ from 0 when the date changes.
   `src/gui/properties/peerlistwidget.cpp`
 - Settings in `qBittorrent.ini` under `[GUI]`: `BanCountries\TodayDate` (the date the
   count belongs to) and `BanCountries\TodayCount`. Safe to delete after undoing.
-- Undo with `git revert 455864bc6`.
+- Undo with `git revert e4947c303`.
 
-### 9. Checked countries are remembered — commit `cf2fb468d` (2026-10-16)
+### 9. Checked countries are remembered — commit `5d5fe0d0d` (2026-10-16)
 
 The countries checked in the country dropdown stay checked after closing and
 restarting qBittorrent, and after rebuilding it. They are saved every time a
@@ -225,18 +225,18 @@ country is checked or unchecked. Ban is enabled at startup if any are checked.
 
 - Changed: `src/gui/countrycombobox.cpp/.h`, `src/gui/mainwindow.cpp/.h`
 - Settings key: `GUI\BanCountries\Checked` (list of country codes)
-- Undo with `git revert cf2fb468d`; the key can then be deleted.
+- Undo with `git revert 5d5fe0d0d`; the key can then be deleted.
 
-### 8. Idle force-started seeds keep blue arrows — commit `6f1ca312f` (2026-10-16)
+### 8. Idle force-started seeds keep blue arrows — commit `91ee23122` (2026-10-16)
 
 Fix for change 7: a force-started seeding torrent counts as "uploading" all the
 time, so it showed green arrows even when idle. Now it shows green only while
 something is actually being uploaded, otherwise the light blue idle arrows.
 
 - Changed: `src/gui/transferlistmodel.cpp`
-- Undo with `git revert 6f1ca312f` (revert before change 7).
+- Undo with `git revert 91ee23122` (revert before change 7).
 
-### 7. Green arrows for actively uploading torrents — commit `80a680878` (2026-10-16)
+### 7. Green arrows for actively uploading torrents — commit `f53040a7e` (2026-10-16)
 
 In the torrent list, torrents that are uploading right now show green up-arrows
 instead of blue, the same green as downloading torrents. Idle seeding torrents
@@ -245,9 +245,9 @@ the status bar and the "Seeding" filter keep the original blue icon.
 
 - New file: `src/icons/uploading.svg` (copy of `upload.svg`, colour `#008000`)
 - Changed: `src/icons/icons.qrc`, `src/gui/uithemecommon.h`, `src/gui/transferlistmodel.cpp`
-- Undo with `git revert 80a680878`.
+- Undo with `git revert f53040a7e`.
 
-### 6. Check several countries, ban them all at once — commit `a177a36bb` (2026-10-16)
+### 6. Check several countries, ban them all at once — commit `3e55c8898` (2026-10-16)
 
 The country dropdown has a checkbox left of each flag. Clicking a country (or pressing
 Space) checks or unchecks it and keeps the list open. The closed dropdown shows
@@ -260,9 +260,9 @@ Checked countries were not remembered after a restart (fixed by change 9).
 - New files: `src/gui/countrycombobox.h`, `src/gui/countrycombobox.cpp` (the list's
   scroll-bar style moved here from `mainwindow.cpp`)
 - Changed: `src/gui/CMakeLists.txt`, `src/gui/mainwindow.cpp/.h`
-- Undo with `git revert a177a36bb`: the dropdown goes back to choosing one country.
+- Undo with `git revert 3e55c8898`: the dropdown goes back to choosing one country.
 
-### 5. Bandwidth priority column removed — commit `2364f9416` (2026-10-16)
+### 5. Bandwidth priority column removed — commit `619faefcc` (2026-10-16)
 
 Reverts change 3 completely on request: the "#" checkbox column and
 `bandwidthprioritizer.h/.cpp` are gone, and the other files are back as before.
@@ -270,9 +270,9 @@ No torrents were checked at the time, so every torrent already had its own speed
 limits. The feature's keys were removed from `qBittorrent.ini` (backup:
 `qBittorrent.ini.before-priority-removal.bak`). Change 4 is unaffected.
 
-To bring the feature back: `git revert 2364f9416`, then rebuild.
+To bring the feature back: `git revert 619faefcc`, then rebuild.
 
-### 4. No confirmation when banning peers from the Peers tab — commit `9a12f8fce` (2026-10-15)
+### 4. No confirmation when banning peers from the Peers tab — commit `e9941885a` (2026-10-15)
 
 "Ban peer permanently" in the Peers tab (right-click menu or Delete key) bans the
 selected peers right away, without the "Are you sure…?" question. The execution log
@@ -280,7 +280,7 @@ entry is unchanged. The country "Ban" button still asks first.
 
 - Changed: `src/gui/properties/peerlistwidget.cpp`
 
-### 3. Bandwidth priority column ("#") — commit `6621860ac` (2026-10-15) — REMOVED in change 5
+### 3. Bandwidth priority column ("#") — commit `a50b0983c` (2026-10-15) — REMOVED in change 5
 
 A checkbox column "#" in the torrent list (tooltip: "Prioritized bandwidth").
 Checked torrents get download and upload bandwidth first. Several checked torrents
@@ -299,7 +299,7 @@ what is left.
 - **Before reverting:** uncheck all boxes and close qBittorrent normally. That restores
   every torrent's own speed limits. The keys above can then be deleted.
 
-### 2. Ban button, list scroll bar — commit `cb7a890ca` (2026-10-15)
+### 2. Ban button, list scroll bar — commit `ce5a82480` (2026-10-15)
 
 "Ban" button right of the country dropdown: bans all connected peers from the
 selected country, with the same confirmation and execution log entry as manual
@@ -311,7 +311,7 @@ list opens with a scroll bar.
   remove them; use Options → Connection → IP Filtering → Manually banned IP
   addresses.
 
-### 1. Country dropdown — commit `9256e7d06` (2026-10-14)
+### 1. Country dropdown — commit `23c00c2d8` (2026-10-14)
 
 Dropdown right of the Options button listing every country in
 `dbip-country-lite.mmdb`, with flags, sorted alphabetically.
