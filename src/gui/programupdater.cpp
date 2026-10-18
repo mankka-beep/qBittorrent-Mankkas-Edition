@@ -29,18 +29,10 @@
 
 #include "programupdater.h"
 
-#include <algorithm>
-
-#include <libtorrent/version.hpp>
-
-#include <QtCore/qconfig.h>
-#include <QtSystemDetection>
-#include <QDebug>
 #include <QDesktopServices>
 #include <QJsonDocument>
 #include <QJsonValue>
-#include <QRegularExpression>
-#include <QXmlStreamReader>
+#include <QUrl>
 
 #include "base/global.h"
 #include "base/logger.h"
@@ -50,112 +42,64 @@
 
 namespace
 {
-    bool isVersionMoreRecent(const ProgramUpdater::Version &remoteVersion)
-    {
-        if (!remoteVersion.isValid())
-            return false;
+    // GitHub's latest published (non-draft, non-prerelease) release of the edition
+    const QString LATEST_RELEASE_API_URL = u"https://api.github.com/repos/" QBT_MOD_GITHUB_REPO "/releases/latest"_s;
+    const QString RELEASES_PAGE_URL = u"" QBT_MOD_GITHUB_URL "/releases"_s;
 
-        const ProgramUpdater::Version currentVersion {QBT_VERSION_MAJOR, QBT_VERSION_MINOR, QBT_VERSION_BUGFIX, QBT_VERSION_BUILD};
-        if (remoteVersion == currentVersion)
-        {
-            const bool isDevVersion = QStringLiteral(QBT_VERSION_STATUS).contains(
-                QRegularExpression(u"(alpha|beta|rc)"_s));
-            if (isDevVersion)
-                return true;
-        }
-        return (remoteVersion > currentVersion);
+    // "v1.2.3" -> 1.2.3
+    ProgramUpdater::Version versionFromTag(const QString &tag)
+    {
+        const QStringView versionString = (tag.startsWith(u'v') || tag.startsWith(u'V')) ? QStringView(tag).mid(1) : QStringView(tag);
+        return ProgramUpdater::Version::fromString(versionString);
     }
 }
 
 void ProgramUpdater::checkForUpdates()
 {
-    // Don't change this User-Agent. In case our updater goes haywire,
-    // the filehost can identify it and contact us.
-    const auto USER_AGENT = QStringLiteral("qBittorrent/" QBT_VERSION_2 " ProgramUpdater (www.qbittorrent.org)");
-    const auto QBT_MAIN_URL = u"https://www.qbittorrent.org/versions.json"_s;
-    const auto QBT_BACKUP_URL = u"https://qbittorrent.github.io/qBittorrent-website/versions.json"_s;
+    m_newVersion = {};
+    m_releaseUrl = RELEASES_PAGE_URL;
 
-    Net::DownloadManager *netManager = Net::DownloadManager::instance();
+    // GitHub's API requires a User-Agent that identifies the program
+    const auto request = Net::DownloadRequest(LATEST_RELEASE_API_URL)
+            .userAgent(u"qBittorrent-Mankkas-Edition/" QBT_MOD_VERSION " (" QBT_MOD_GITHUB_URL ")"_s);
     const bool useProxy = Preferences::instance()->useProxyForGeneralPurposes();
-
-    m_pendingRequestCount = 2;
-    // don't use the custom user agent for the following requests, disguise as a normal browser instead
-    netManager->download(Net::DownloadRequest(QBT_MAIN_URL), useProxy, this, [this](const Net::DownloadResult &result)
-    {
-        fallbackDownloadFinished(result, m_qbtMainVersion);
-    });
-    netManager->download(Net::DownloadRequest(QBT_BACKUP_URL), useProxy, this, [this](const Net::DownloadResult &result)
-    {
-        fallbackDownloadFinished(result, m_qbtBackupVersion);
-    });
+    Net::DownloadManager::instance()->download(request, useProxy, this, &ProgramUpdater::handleLatestReleaseDownloaded);
 }
 
 ProgramUpdater::Version ProgramUpdater::getNewVersion() const
 {
-    switch (getLatestRemoteSource())
-    {
-    case RemoteSource::QbtMain:
-        return m_qbtMainVersion;
-    case RemoteSource::QbtBackup:
-        return m_qbtBackupVersion;
-    }
-    Q_UNREACHABLE();
+    return m_newVersion;
 }
 
-void ProgramUpdater::fallbackDownloadFinished(const Net::DownloadResult &result, Version &version)
+QString ProgramUpdater::releaseUrl() const
 {
-    version = {};
+    return m_releaseUrl;
+}
 
+void ProgramUpdater::handleLatestReleaseDownloaded(const Net::DownloadResult &result)
+{
     if (result.status != Net::DownloadStatus::Success)
     {
-        LogMsg(tr("Failed to download the program update info. URL: \"%1\". Error: \"%2\"").arg(result.url, result.errorString) , Log::WARNING);
-        handleFinishedRequest();
+        // Also happens while the repository has no releases yet (GitHub answers "404 Not Found")
+        LogMsg(tr("Failed to download the program update info. URL: \"%1\". Error: \"%2\"").arg(result.url, result.errorString), Log::WARNING);
+        emit updateCheckFinished();
         return;
     }
 
-    const auto json = QJsonDocument::fromJson(result.data);
-
-#if defined(Q_OS_MACOS)
-    const QString platformKey = u"macos"_s;
-#elif defined(Q_OS_WIN)
-    const QString platformKey = u"win"_s;
-#endif
-
-    if (const QJsonValue verJSON = json[platformKey][u"version"_s]; verJSON.isString())
+    const QJsonDocument json = QJsonDocument::fromJson(result.data);
+    const Version latestVersion = versionFromTag(json[u"tag_name"_s].toString());
+    const Version currentVersion = versionFromTag(QStringLiteral(QBT_MOD_VERSION));
+    if (latestVersion.isValid() && currentVersion.isValid() && (latestVersion > currentVersion))
     {
-        const Version tmpVer {verJSON.toString()};
-        if (isVersionMoreRecent(tmpVer))
-            version = tmpVer;
+        m_newVersion = latestVersion;
+        if (const QString releasePage = json[u"html_url"_s].toString(); releasePage.startsWith(u"" QBT_MOD_GITHUB_URL "/"_s))
+            m_releaseUrl = releasePage;
     }
 
-    handleFinishedRequest();
+    emit updateCheckFinished();
 }
 
 bool ProgramUpdater::updateProgram() const
 {
-    switch (getLatestRemoteSource())
-    {
-    case RemoteSource::QbtMain:
-        return QDesktopServices::openUrl(u"https://www.qbittorrent.org/download"_s);
-    case RemoteSource::QbtBackup:
-        return QDesktopServices::openUrl(u"https://qbittorrent.github.io/qBittorrent-website/download"_s);
-    }
-    Q_UNREACHABLE();
-}
-
-void ProgramUpdater::handleFinishedRequest()
-{
-    --m_pendingRequestCount;
-    if (m_pendingRequestCount == 0)
-        emit updateCheckFinished();
-}
-
-ProgramUpdater::RemoteSource ProgramUpdater::getLatestRemoteSource() const
-{
-    const Version max = std::max({m_qbtMainVersion, m_qbtBackupVersion});
-    if (max == m_qbtMainVersion)
-        return RemoteSource::QbtMain;
-    if (max == m_qbtBackupVersion)
-        return RemoteSource::QbtBackup;
-    Q_UNREACHABLE();
+    return QDesktopServices::openUrl(QUrl(m_releaseUrl));
 }

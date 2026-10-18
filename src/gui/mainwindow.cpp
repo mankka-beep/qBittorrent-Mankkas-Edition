@@ -1803,10 +1803,11 @@ void MainWindow::handleUpdateCheckFinished(ProgramUpdater *updater, const bool i
     const ProgramUpdater::Version newVersion = updater->getNewVersion();
     if (newVersion.isValid())
     {
+        // A new release of Mankka's Edition (from its own GitHub releases, not the official qBittorrent)
         const QString msg {tr("A new version is available.") + u"<br/>"
-            + tr("Do you want to download %1?").arg(newVersion.toString()) + u"<br/><br/>"
-            + u"<a href=\"https://www.qbittorrent.org/news\">%1</a>"_s.arg(tr("Open changelog..."))};
-        auto *msgBox = new QMessageBox {QMessageBox::Question, tr("qBittorrent Update Available"), msg
+            + tr("Do you want to download %1?").arg(u"v" + newVersion.toString()) + u"<br/><br/>"
+            + u"<a href=\"%1\">%2</a>"_s.arg(updater->releaseUrl().toHtmlEscaped(), tr("Open changelog..."))};
+        auto *msgBox = new QMessageBox {QMessageBox::Question, tr("%1 Update Available").arg(u"qBittorrent Mankka's Edition"_s), msg
             , (QMessageBox::Yes | QMessageBox::No), this};
         msgBox->setAttribute(Qt::WA_DeleteOnClose);
         msgBox->setAttribute(Qt::WA_ShowWithoutActivating);

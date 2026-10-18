@@ -30,7 +30,7 @@
 #pragma once
 
 #include <QObject>
-#include <QUrl>
+#include <QString>
 
 #include "base/utils/version.h"
 
@@ -39,6 +39,8 @@ namespace Net
     struct DownloadResult;
 }
 
+// Checks for new releases of Mankka's Edition on its own GitHub repository
+// (QBT_MOD_GITHUB_REPO), never for the official qBittorrent.
 class ProgramUpdater final : public QObject
 {
     Q_OBJECT
@@ -50,26 +52,18 @@ public:
     using QObject::QObject;
 
     void checkForUpdates();
+    // The newer release of the edition, or an invalid version if there is none
     Version getNewVersion() const;
+    // Page of the newer release (or of all releases)
+    QString releaseUrl() const;
     bool updateProgram() const;
 
 signals:
     void updateCheckFinished();
 
-private slots:
-    void fallbackDownloadFinished(const Net::DownloadResult &result, Version &version);
-
 private:
-    enum class RemoteSource
-    {
-        QbtMain,
-        QbtBackup
-    };
+    void handleLatestReleaseDownloaded(const Net::DownloadResult &result);
 
-    void handleFinishedRequest();
-    RemoteSource getLatestRemoteSource() const;
-
-    int m_pendingRequestCount = 0;
-    Version m_qbtMainVersion;
-    Version m_qbtBackupVersion;
+    Version m_newVersion;
+    QString m_releaseUrl;
 };

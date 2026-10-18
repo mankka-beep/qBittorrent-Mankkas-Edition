@@ -69,15 +69,17 @@ AboutDialog::AboutDialog(QWidget *parent)
         u"%2\n\n"
         u"<table>"
         u"<tr><td>%3</td><td><a href=\"https://www.qbittorrent.org\">https://www.qbittorrent.org</a></td></tr>"
-        u"<tr><td>%4</td><td><a href=\"https://forum.qbittorrent.org\">https://forum.qbittorrent.org</a></td></tr>"
-        u"<tr><td>%5</td><td><a href=\"https://bugs.qbittorrent.org\">https://bugs.qbittorrent.org</a></td></tr>"
+        // Mankka's Edition: its own page and bug tracker (problems with the edition must not
+        // be reported to the official qBittorrent project)
+        u"<tr><td>%4</td><td><a href=\"" QBT_MOD_GITHUB_URL "\">" QBT_MOD_GITHUB_URL "</a></td></tr>"
+        u"<tr><td>%5</td><td><a href=\"" QBT_MOD_GITHUB_URL "/issues\">" QBT_MOD_GITHUB_URL "/issues</a></td></tr>"
         u"</table>"
         u"</p>"_s
         .arg(tr("An advanced BitTorrent client programmed in C++, based on Qt toolkit and libtorrent-rasterbar.")
                 .replace(u"C++"_s, u"C\u2060+\u2060+"_s) // make C++ non-breaking
             , tr("Copyright %1 2006-2026 The qBittorrent project").arg(C_COPYRIGHT)
             , tr("Home Page:")
-            , tr("Forum:")
+            , u"Mankka's Edition:"_s
             , tr("Bug Tracker:"));
     m_ui->labelAbout->setText(aboutText);
 
