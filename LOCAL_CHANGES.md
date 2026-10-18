@@ -21,6 +21,25 @@ To get the official program back completely: `git switch master`, then rebuild.
 
 ## Changes (newest first)
 
+### 17. Real-time Auto Ban, 3-second box, country tooltips on flags — commit `82088a11e` (2026-10-18)
+
+- **Auto Ban is real-time.** While it's green, qBittorrent reports every new peer
+  connection (incoming and outgoing) and a peer from a checked country is banned right
+  away. That's the same ban as before (ban list, log entry, "Today:" count), now
+  without waiting a minute. When turned on, the peers that are already connected are
+  checked once. The once-a-minute timer is gone. Real-time Auto Ban uses the loaded GeoIP
+  database, so "Resolve peer countries" must stay on.
+- Engine part: `Session::setPeerConnectedNotificationEnabled()` turns libtorrent's
+  connection alerts on only while Auto Ban is on, and `Session::peerConnected(ip)` reports
+  each connection.
+- **The ban box** shows for 3 seconds (was 5), for both Ban and Auto Ban. For Auto Ban it
+  says "<IP> from <country> banned". A new box replaces the previous one instead of
+  piling up.
+- **Tooltips:** hovering over a flag in Execution Log or Blocked IPs shows the country name.
+- Changed: `src/base/bittorrent/session.h`, `sessionimpl.cpp/.h`,
+  `src/gui/mainwindow.cpp/.h`, `src/gui/log/loglistview.cpp`
+- Undo with `git revert 82088a11e` (Auto Ban then runs once a minute again).
+
 ### 16. Flags after banned IPs in the Execution Log tab — commit `53b90aeb7` (2026-10-18)
 
 In Execution Log → Execution Log, messages about banned peers show the IP's country
