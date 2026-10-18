@@ -41,3 +41,6 @@ src/icons/skin/build-icons/icons/*.png
 
 # CMake build directory
 build/
+
+# Release packages made by dist/mankkas-edition/package-release.ps1
+release/
