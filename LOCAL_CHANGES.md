@@ -21,6 +21,18 @@ To get the official program back completely: `git switch master`, then rebuild.
 
 ## Changes (newest first)
 
+### 19. "Unban" button in the "Total bans" window — commit `9a380867e` (2026-10-18)
+
+An "Unban" button in the lower left corner of the "Total bans" window (Close stays on the
+right). It's greyed out until a country is selected; several can be selected with Ctrl or
+Shift. Pressing it removes every banned IP address of the selected countries from the
+banned IP list right away (no confirmation), writes "Unbanned N IP address(es) from …"
+to the execution log, and recounts the list. Countries still checked in the dropdown
+can be banned again by Ban or Auto Ban.
+
+- Changed: `src/gui/totalbansdialog.cpp/.h`
+- Undo with `git revert 9a380867e`. IPs already unbanned stay unbanned.
+
 ### 18. Bans only apply to completed (seeding) torrents — commit `9daf34c95` (2026-10-18)
 
 Banned IPs are only blocked for torrents that are complete (seeding). A torrent that is
