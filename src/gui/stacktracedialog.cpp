@@ -53,15 +53,18 @@ void StacktraceDialog::setText(const QString &signalName, const QString &stacktr
 
     const QString htmlStr = QStringLiteral(
         "<p align=center><b><font size=7 color=red>"
-        "qBittorrent has crashed"
+        "qBittorrent Mankka's Edition has crashed"
         "</font></b></p>"
         "<font size=4><p>"
+        // Crashes of the edition are reported to the edition, not to the official qBittorrent
         "Please file a bug report at "
-        "<a href=\"https://bugs.qbittorrent.org\">https://bugs.qbittorrent.org</a> "
-        "and provide the following information:"
+        "<a href=\"" QBT_MOD_GITHUB_URL "/issues\">" QBT_MOD_GITHUB_URL "/issues</a> "
+        "and provide the following information. "
+        "Please don't report it to the official qBittorrent project."
         "</p></font>"
         "<br/><hr><br/>"
         "<p align=center><font size=4>"
+        "Edition: " QBT_DISPLAY_NAME "<br/>"
         "qBittorrent version: " QBT_VERSION " (%1-bit)<br/>"
         "Libtorrent version: %2<br/>"
         "Qt version: " QT_VERSION_STR "<br/>"
