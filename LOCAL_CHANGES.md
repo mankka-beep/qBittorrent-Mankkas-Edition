@@ -21,6 +21,29 @@ To get the official program back completely: `git switch master`, then rebuild.
 
 ## Changes (newest first)
 
+### 18. Bans only apply to completed (seeding) torrents — commit `9daf34c95` (2026-10-18)
+
+Banned IPs are only blocked for torrents that are complete (seeding). A torrent that is
+still downloading ignores the ban list, so banned peers can connect to it. This uses
+libtorrent's per-torrent `apply_ip_filter` flag, which `TorrentImpl::updateIPFilterUsage()`
+keeps in step with the torrent's state on every status update. When a torrent finishes, the
+bans start applying to it and banned peers are disconnected. If it downloads again (e.g.
+more files selected), the bans stop applying again. Seeding torrents still refuse banned
+IPs and log them in Blocked IPs. Ban, Auto Ban and the Peers tab still add IPs to the ban
+list as before; it just only takes effect for seeding torrents.
+
+The session's IP filter holds only the banned IPs here (no IP filter file is in use). If
+an IP filter file is enabled later, downloading torrents would ignore it too.
+
+- Changed: `src/base/bittorrent/torrentimpl.cpp/.h`
+- **How to undo safely:** libtorrent saves the flag with each torrent, so a plain revert would
+  leave the torrents that were downloading at that moment ignoring bans. Instead:
+  1. In `TorrentImpl::updateIPFilterUsage()` change `const bool shouldApplyIPFilter = isFinished();`
+     to `const bool shouldApplyIPFilter = true;`, rebuild and run qBittorrent for a minute with
+     all torrents started.
+  2. Then `git checkout -- src/base/bittorrent/torrentimpl.cpp` and `git revert 9daf34c95`,
+     and rebuild.
+
 ### 17. Real-time Auto Ban, 3-second box, country tooltips on flags — commit `82088a11e` (2026-10-18)
 
 - **Auto Ban is real-time.** While it's green, qBittorrent reports every new peer
