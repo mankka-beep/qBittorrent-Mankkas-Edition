@@ -1,7 +1,22 @@
-# Local changes to qBittorrent
+# Local changes to qBittorrent (Mankka's Edition)
 
 Local-only modifications on the `my-changes` branch. `master` is an unmodified copy
 of the official qBittorrent source. Nothing here is pushed to GitHub.
+
+## Version numbers
+
+The edition is called "qBittorrent vX.Y.Z Mankka's Edition" (`QBT_MOD_VERSION` in
+`src/base/version.h.in`). The version goes up with every change:
+
+- **Y + 1** (Z back to 0): a new feature or a visible change
+- **Z + 1**: a fix or a small tweak of an existing feature
+- **X + 1** (Y and Z back to 0): moving to a newer official qBittorrent release, or a
+  big rework
+
+| Version | Changes | Based on qBittorrent |
+|---|---|---|
+| v1.1.0 | 21–22 | v5.4.0alpha1 |
+| v1.0.0 | 1–20 (first named version) | v5.4.0alpha1 |
 
 ## How to undo a change
 
@@ -20,6 +35,17 @@ To see exactly what a change did: `git show <commit>`.
 To get the official program back completely: `git switch master`, then rebuild.
 
 ## Changes (newest first)
+
+### 22. Named "Mankka's Edition", version v1.1.0 — commit `bc0208990` (2026-10-18)
+
+The window title and the About dialog show "qBittorrent v1.1.0 Mankka's Edition"
+(previously "qBittorrent v1.0.0 Mankka © 2026"). The About dialog adds "Modifications
+© 2026 Mankka" and "Unofficial edition, not affiliated with the qBittorrent project."
+The version numbering rules above are written down in `src/base/version.h.in`. Trackers
+and peers still see qBittorrent 5.4.0.
+
+- Changed: `src/base/version.h.in`, `src/gui/aboutdialog.cpp`
+- Undo with `git revert bc0208990`.
 
 ### 21. Sort the Progress column by the progress shown — commit `85c5f376f` (2026-10-18)
 
