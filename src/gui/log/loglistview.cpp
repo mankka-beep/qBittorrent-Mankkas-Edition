@@ -120,7 +120,7 @@ namespace
             const QString message = index.data(BaseLogModel::MessageRole).toString();
             palette.setColor(QPalette::Active, QPalette::WindowText, index.data(BaseLogModel::MessageForegroundRole).value<QColor>());
 
-            // Peer log: the country flag of the IP address is shown right after the address
+            // Blocked/banned peers: the country flag of the IP address is shown right after the address
             const QString ip = index.data(BaseLogModel::IPRole).toString();
             const QString countryCode = index.data(BaseLogModel::CountryCodeRole).toString();
             const qsizetype ipPosition = (ip.isEmpty() || countryCode.isEmpty()) ? -1 : message.indexOf(ip);
@@ -131,8 +131,13 @@ namespace
             }
             else
             {
-                const QString beforeFlag = message.left(ipPosition + ip.size());
-                const QString afterFlag = message.mid(ipPosition + ip.size());
+                // An address in quotes ("1.2.3.4") gets its flag after the closing quote
+                qsizetype flagPosition = ipPosition + ip.size();
+                if ((flagPosition < message.size()) && (message[flagPosition] == u'"'))
+                    ++flagPosition;
+
+                const QString beforeFlag = message.left(flagPosition);
+                const QString afterFlag = message.mid(flagPosition);
                 style->drawItemText(painter, textRect.adjusted(messageCoordinateX, 0, 0, 0), option.displayAlignment, palette
                                     , isEnabled, beforeFlag, textRole);
 

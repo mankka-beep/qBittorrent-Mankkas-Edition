@@ -41,6 +41,38 @@
 
 const int MAX_VISIBLE_MESSAGES = 20000;
 
+namespace
+{
+    // The IP address in an execution log message about a banned peer, or an empty string.
+    // The messages are recognized by their (translated) texts.
+    QString bannedIPInMessage(const QString &message)
+    {
+        static const QStringList bannedPeerMessages
+        {
+            QCoreApplication::translate("PeerListWidget", "Peer \"%1\" is manually banned"),
+            QCoreApplication::translate("BitTorrent::SessionImpl", "IP banned by libtorrent. IP: %1.")
+        };
+
+        for (const QString &bannedPeerMessage : bannedPeerMessages)
+        {
+            const qsizetype placeholderPosition = bannedPeerMessage.indexOf(u"%1");
+            if (placeholderPosition < 0)
+                continue;
+
+            const QStringView prefix = QStringView(bannedPeerMessage).left(placeholderPosition);
+            const QStringView suffix = QStringView(bannedPeerMessage).mid(placeholderPosition + 2);
+            if ((message.size() <= (prefix.size() + suffix.size())) || !message.startsWith(prefix) || !message.endsWith(suffix))
+                continue;
+
+            const QString ip = message.mid(prefix.size(), (message.size() - prefix.size() - suffix.size()));
+            if (!QHostAddress(ip).isNull())
+                return ip;
+        }
+
+        return {};
+    }
+}
+
 BaseLogModel::Message::Message(const QString &time, const QString &message, const Log::MsgType type
         , const QString &ip, const QString &countryCode)
     : m_time {time}
@@ -174,7 +206,12 @@ LogMessageModel::LogMessageModel(QObject *parent)
 void LogMessageModel::handleNewMessage(const Log::Msg &message)
 {
     const QString time = QLocale::system().toString(QDateTime::fromSecsSinceEpoch(message.timestamp), QLocale::ShortFormat);
-    addNewMessage({time, message.message, message.type});
+
+    // Messages about banned peers show the country flag after the IP address
+    const QString ip = bannedIPInMessage(message.message);
+    const QString countryCode = ip.isEmpty() ? QString() : Net::GeoIPManager::instance()->lookup(QHostAddress(ip));
+
+    addNewMessage({time, message.message, message.type, ip, countryCode});
 }
 
 QColor LogMessageModel::messageForeground(const Message &message) const
