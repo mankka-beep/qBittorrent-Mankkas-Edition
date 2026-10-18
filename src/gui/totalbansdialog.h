@@ -32,8 +32,13 @@
 
 #include "base/settingvalue.h"
 
+class QLabel;
+class QPushButton;
+class QTreeWidget;
+
 // Shows how many of the manually banned IP addresses belong to each country (according to
 // the IP geolocation database), from the most bans to the fewest, with the total below.
+// "Unban" removes all banned IP addresses of the selected countries from the list.
 class TotalBansDialog final : public QDialog
 {
     Q_OBJECT
@@ -44,5 +49,11 @@ public:
     ~TotalBansDialog() override;
 
 private:
+    void populate();
+    void unbanSelectedCountries();
+
+    QTreeWidget *m_list = nullptr;
+    QLabel *m_totalLabel = nullptr;
+    QPushButton *m_unbanButton = nullptr;
     SettingValue<QSize> m_storeDialogSize;
 };

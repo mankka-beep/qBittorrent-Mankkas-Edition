@@ -31,36 +31,103 @@
 
 #include <QDialogButtonBox>
 #include <QHash>
+#include <QHBoxLayout>
 #include <QHeaderView>
 #include <QHostAddress>
 #include <QLabel>
 #include <QList>
 #include <QLocale>
+#include <QPushButton>
+#include <QSet>
 #include <QTreeWidget>
 #include <QVBoxLayout>
 
 #include "base/bittorrent/session.h"
 #include "base/global.h"
+#include "base/logger.h"
 #include "base/net/geoipmanager.h"
 #include "uithememanager.h"
 
 #define SETTINGS_KEY(name) u"TotalBansDialog/" name
 
+namespace
+{
+    const int COUNTRY_CODE_ROLE = Qt::UserRole;
+
+    // The country of each banned IP address, in the order of the list (empty when unknown)
+    QStringList countriesOf(const QStringList &bannedIPs)
+    {
+        QList<QHostAddress> addresses;
+        addresses.reserve(bannedIPs.size());
+        for (const QString &ip : bannedIPs)
+            addresses.append(QHostAddress(ip));
+        return Net::GeoIPManager::instance()->lookupCountries(addresses);
+    }
+}
+
 TotalBansDialog::TotalBansDialog(QWidget *parent)
     : QDialog(parent)
+    , m_list {new QTreeWidget(this)}
+    , m_totalLabel {new QLabel(this)}
+    , m_unbanButton {new QPushButton(tr("Unban"), this)}
     , m_storeDialogSize {SETTINGS_KEY(u"Size"_s)}
 {
     setWindowTitle(tr("Total bans"));
     setAttribute(Qt::WA_DeleteOnClose);
 
+    m_list->setColumnCount(2);
+    m_list->setHeaderLabels({tr("Country"), tr("Bans")});
+    m_list->setRootIsDecorated(false);
+    m_list->setUniformRowHeights(true);
+    m_list->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    m_list->header()->setStretchLastSection(false);
+    m_list->header()->setSectionResizeMode(0, QHeaderView::Stretch);
+    m_list->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+    m_list->headerItem()->setTextAlignment(1, (Qt::AlignRight | Qt::AlignVCenter));
+
+    QFont boldFont = m_totalLabel->font();
+    boldFont.setBold(true);
+    m_totalLabel->setFont(boldFont);
+
+    m_unbanButton->setToolTip(tr("Remove all banned IP addresses of the selected countries from the banned IP list"));
+    m_unbanButton->setEnabled(false);
+    connect(m_unbanButton, &QPushButton::clicked, this, &TotalBansDialog::unbanSelectedCountries);
+    connect(m_list, &QTreeWidget::itemSelectionChanged, this, [this]
+    {
+        m_unbanButton->setEnabled(!m_list->selectedItems().isEmpty());
+    });
+
+    auto *buttonBox = new QDialogButtonBox(QDialogButtonBox::Close, this);
+    connect(buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
+
+    // "Unban" in the lower left corner, "Close" on the right
+    auto *buttonLayout = new QHBoxLayout;
+    buttonLayout->addWidget(m_unbanButton);
+    buttonLayout->addStretch();
+    buttonLayout->addWidget(buttonBox);
+
+    auto *layout = new QVBoxLayout(this);
+    layout->addWidget(m_list);
+    layout->addWidget(m_totalLabel);
+    layout->addLayout(buttonLayout);
+
+    populate();
+
+    resize(400, 500);
+    if (const QSize dialogSize = m_storeDialogSize; dialogSize.isValid())
+        resize(dialogSize);
+}
+
+TotalBansDialog::~TotalBansDialog()
+{
+    m_storeDialogSize = size();
+}
+
+void TotalBansDialog::populate()
+{
     // Count the manually banned IP addresses per country
     const QStringList bannedIPs = BitTorrent::Session::instance()->bannedIPs();
-    QList<QHostAddress> addresses;
-    addresses.reserve(bannedIPs.size());
-    for (const QString &ip : bannedIPs)
-        addresses.append(QHostAddress(ip));
-
-    const QStringList countries = Net::GeoIPManager::instance()->lookupCountries(addresses);
+    const QStringList countries = countriesOf(bannedIPs);
     QHash<QString, int> bansPerCountry;
     for (const QString &country : countries)
         ++bansPerCountry[country];  // an empty code collects the addresses without a known country
@@ -86,46 +153,53 @@ TotalBansDialog::TotalBansDialog(QWidget *parent)
     });
 
     const QLocale locale;
-    auto *list = new QTreeWidget(this);
-    list->setColumnCount(2);
-    list->setHeaderLabels({tr("Country"), tr("Bans")});
-    list->setRootIsDecorated(false);
-    list->setUniformRowHeights(true);
-    list->setSelectionMode(QAbstractItemView::ExtendedSelection);
-    list->header()->setStretchLastSection(false);
-    list->header()->setSectionResizeMode(0, QHeaderView::Stretch);
-    list->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
-    list->headerItem()->setTextAlignment(1, (Qt::AlignRight | Qt::AlignVCenter));
+    m_list->clear();
     for (const CountryBans &row : asConst(rows))
     {
-        auto *item = new QTreeWidgetItem(list);
+        auto *item = new QTreeWidgetItem(m_list);
         item->setIcon(0, UIThemeManager::instance()->getFlagIcon(row.code));
         item->setText(0, row.name);
+        item->setData(0, COUNTRY_CODE_ROLE, row.code);
         item->setText(1, locale.toString(row.bans));
         item->setTextAlignment(1, (Qt::AlignRight | Qt::AlignVCenter));
     }
 
-    auto *totalLabel = new QLabel(tr("Total: %1 bans in %2 countries")
-            .arg(locale.toString(bannedIPs.size()), locale.toString(bansPerCountry.size() - (bansPerCountry.contains({}) ? 1 : 0)))
-            , this);
-    QFont boldFont = totalLabel->font();
-    boldFont.setBold(true);
-    totalLabel->setFont(boldFont);
-
-    auto *buttonBox = new QDialogButtonBox(QDialogButtonBox::Close, this);
-    connect(buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
-
-    auto *layout = new QVBoxLayout(this);
-    layout->addWidget(list);
-    layout->addWidget(totalLabel);
-    layout->addWidget(buttonBox);
-
-    resize(400, 500);
-    if (const QSize dialogSize = m_storeDialogSize; dialogSize.isValid())
-        resize(dialogSize);
+    m_totalLabel->setText(tr("Total: %1 bans in %2 countries")
+            .arg(locale.toString(bannedIPs.size()), locale.toString(bansPerCountry.size() - (bansPerCountry.contains({}) ? 1 : 0))));
+    m_unbanButton->setEnabled(false);
 }
 
-TotalBansDialog::~TotalBansDialog()
+void TotalBansDialog::unbanSelectedCountries()
 {
-    m_storeDialogSize = size();
+    QSet<QString> countryCodes;
+    QStringList countryNames;
+    const QList<QTreeWidgetItem *> selectedItems = m_list->selectedItems();
+    for (const QTreeWidgetItem *item : selectedItems)
+    {
+        countryCodes.insert(item->data(0, COUNTRY_CODE_ROLE).toString());
+        countryNames.append(item->text(0));
+    }
+    if (countryCodes.isEmpty())
+        return;
+
+    // Keep every banned IP address that is not from one of the selected countries
+    auto *session = BitTorrent::Session::instance();
+    const QStringList bannedIPs = session->bannedIPs();
+    const QStringList countries = countriesOf(bannedIPs);
+    QStringList keptIPs;
+    keptIPs.reserve(bannedIPs.size());
+    for (qsizetype i = 0; i < bannedIPs.size(); ++i)
+    {
+        if (!countryCodes.contains(countries[i]))
+            keptIPs.append(bannedIPs[i]);
+    }
+
+    const qsizetype unbannedCount = bannedIPs.size() - keptIPs.size();
+    if (unbannedCount > 0)
+    {
+        session->setBannedIPs(keptIPs);
+        LogMsg(tr("Unbanned %1 IP address(es) from %2").arg(QString::number(unbannedCount), countryNames.join(u", ")));
+    }
+
+    populate();
 }
