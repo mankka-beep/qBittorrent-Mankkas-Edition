@@ -23,7 +23,7 @@ change the version.
 
 | Version | Changes | Based on qBittorrent |
 |---|---|---|
-| v1.1.1 | 24 | v5.4.0alpha1 |
+| v1.1.1 | 24–25 (25: packaging only) | v5.4.0alpha1 |
 | v1.1.0 | 21–23 (23: repository and release preparation only) | v5.4.0alpha1 |
 | v1.0.0 | 1–20 (first named version) | v5.4.0alpha1 |
 
@@ -44,6 +44,18 @@ To see exactly what a change did: `git show <commit>`.
 To get the official program back completely: `git switch master`, then rebuild.
 
 ## Changes (newest first)
+
+### 25. Qt's translations in the build and the release zip (packaging only) — commit `601b26487` (2026-10-18)
+
+Qt's own buttons and standard dialogs now follow the program's language (e.g. Finnish):
+`build-windows.ps1` and `package-release.ps1` copy Qt's `translations\qtbase_*.qm` next to
+the program (the `translations` folder named in `qt.conf`). Qt's `qttranslations` archive must
+be installed (BUILDING.md shows the command). The program itself is unchanged, so the version
+stays v1.1.1.
+
+- Changed: `dist/mankkas-edition/build-windows.ps1`, `dist/mankkas-edition/package-release.ps1`,
+  `docs/mankkas-edition/BUILDING.md`
+- Undo with `git revert 601b26487`.
 
 ### 24. Update check and About links lead to the edition, version v1.1.1 — commit `00a5136f4` (2026-10-18)
 
