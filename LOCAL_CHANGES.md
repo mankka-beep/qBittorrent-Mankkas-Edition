@@ -21,6 +21,15 @@ To get the official program back completely: `git switch master`, then rebuild.
 
 ## Changes (newest first)
 
+### 21. Sort the Progress column by the progress shown — commit `85c5f376f` (2026-10-18)
+
+Sorting by Progress now uses the value the bar shows: for a seed that is uploading, the
+highest progress of the peers it uploads to; for all other torrents, their own progress.
+Uploading seeds therefore move in the sorted list as their peers' progress changes.
+
+- Changed: `src/gui/transferlistsortmodel.cpp`
+- Undo with `git revert 85c5f376f` (sorting then uses the torrents' own progress again).
+
 ### 20. Own version name, lighter green, peer progress on uploading seeds — commit `a58148118` (2026-10-18)
 
 - **Name:** the window title and the About dialog show "qBittorrent v1.0.0 Mankka © 2026"
