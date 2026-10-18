@@ -45,3 +45,8 @@
 
 #define QBT_VERSION "v" PROJECT_VERSION
 #define QBT_VERSION_2 PROJECT_VERSION
+
+// Name of this locally modified build, shown in the window title and the About dialog.
+// The program still identifies itself to trackers and peers with QBT_VERSION above.
+#define QBT_MOD_VERSION "v1.0.0"
+#define QBT_DISPLAY_NAME "qBittorrent " QBT_MOD_VERSION " Mankka © 2026"

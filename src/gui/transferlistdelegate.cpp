@@ -78,7 +78,10 @@ void TransferListDelegate::paint(QPainter *painter, const QStyleOptionViewItem &
                 }
             };
 
-            const int progress = static_cast<int>(index.data(TransferListModel::UnderlyingDataRole).toReal());
+            // While a seeding torrent is uploading, the bar shows the highest progress of the
+            // peers it is uploading to, in the same green as the uploading arrows
+            const QVariant uploadingPeerProgress = index.data(TransferListModel::UploadingPeerProgressRole);
+            const int progress = static_cast<int>((uploadingPeerProgress.isValid() ? uploadingPeerProgress : index.data(TransferListModel::UnderlyingDataRole)).toReal());
 
             const QModelIndex statusIndex = index.siblingAtColumn(TransferListModel::TR_STATUS);
             const auto torrentState = statusIndex.data(TransferListModel::UnderlyingDataRole).value<TorrentState>();
@@ -86,7 +89,9 @@ void TransferListDelegate::paint(QPainter *painter, const QStyleOptionViewItem &
             QStyleOptionViewItem customOption {option};
             customOption.state.setFlag(QStyle::State_Enabled, isEnableState(torrentState));
 
-            const QColor color = Preferences::instance()->getProgressBarFollowsTextColor() ? index.data(Qt::ForegroundRole).value<QColor>() : QColor();
+            QColor color = Preferences::instance()->getProgressBarFollowsTextColor() ? index.data(Qt::ForegroundRole).value<QColor>() : QColor();
+            if (uploadingPeerProgress.isValid())
+                color = QColor(0x32, 0xcd, 0x32);  // #32cd32, as in uploading.svg
 
             m_progressBarPainter.paint(painter, customOption, index.data().toString(), progress, color);
         }

@@ -29,6 +29,8 @@
 
 #pragma once
 
+#include <optional>
+
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/hashed_index.hpp>
 #include <boost/multi_index/random_access_index.hpp>
@@ -39,6 +41,7 @@
 #include <QHash>
 #include <QIcon>
 #include <QList>
+#include <QSet>
 
 #include "base/bittorrent/torrent.h"
 
@@ -100,7 +103,10 @@ public:
     enum DataRole
     {
         UnderlyingDataRole = Qt::UserRole,
-        AdditionalUnderlyingDataRole
+        AdditionalUnderlyingDataRole,
+        // Progress column: highest progress (0-100) of the peers a seeding torrent is uploading
+        // to right now; invalid when the torrent is not actively uploading
+        UploadingPeerProgressRole
     };
 
     explicit TransferListModel(QObject *parent = nullptr);
@@ -128,6 +134,8 @@ private:
     QString displayValue(const BitTorrent::Torrent *torrent, int column) const;
     QVariant internalValue(const BitTorrent::Torrent *torrent, int column, bool alt) const;
     QIcon getIconByState(BitTorrent::TorrentState state) const;
+    void updateUploadingPeerProgress(BitTorrent::Torrent *torrent);
+    std::optional<qreal> uploadingPeerProgress(const BitTorrent::Torrent *torrent) const;
 
     using TorrentList = boost::multi_index_container<
         BitTorrent::Torrent *,
@@ -148,6 +156,11 @@ private:
 
     HideZeroValuesMode m_hideZeroValuesMode = HideZeroValuesMode::Never;
     bool m_useTorrentStatesColors = false;
+
+    // Highest progress (0-1) of the peers that actively uploading seeds are uploading to,
+    // and the torrents whose peer list is being fetched for it
+    QHash<const BitTorrent::Torrent *, qreal> m_uploadingPeerProgress;
+    QSet<const BitTorrent::Torrent *> m_uploadingPeerProgressRequests;
 
     // cached icons
     QIcon m_checkingIcon;

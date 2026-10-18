@@ -29,11 +29,16 @@
 
 #include "transferlistmodel.h"
 
+#include <algorithm>
+
 #include <QApplication>
 #include <QDateTime>
 #include <QDebug>
+#include <QFuture>
+#include <QPointer>
 
 #include "base/bittorrent/infohash.h"
+#include "base/bittorrent/peerinfo.h"
 #include "base/bittorrent/session.h"
 #include "base/bittorrent/torrent.h"
 #include "base/preferences.h"
@@ -554,7 +559,20 @@ QVariant TransferListModel::data(const QModelIndex &index, const int role) const
             return m_stateThemeColors.value(torrent->state());
         break;
     case Qt::DisplayRole:
+        if (index.column() == TR_PROGRESS)
+        {
+            // Same format as the torrent's own progress
+            if (const std::optional<qreal> peerProgress = uploadingPeerProgress(torrent))
+                return (*peerProgress >= 1) ? u"100%"_s : (Utils::String::fromDouble((*peerProgress * 100), 1) + u'%');
+        }
         return displayValue(torrent, index.column());
+    case UploadingPeerProgressRole:
+        if (index.column() == TR_PROGRESS)
+        {
+            if (const std::optional<qreal> peerProgress = uploadingPeerProgress(torrent))
+                return (*peerProgress * 100);
+        }
+        break;
     case UnderlyingDataRole:
         return internalValue(torrent, index.column(), false);
     case AdditionalUnderlyingDataRole:
@@ -684,6 +702,9 @@ void TransferListModel::handleTorrentAboutToBeRemoved(BitTorrent::Torrent *const
     const int row = getTorrentRow(torrent);
     Q_ASSERT(row >= 0);
 
+    m_uploadingPeerProgress.remove(torrent);
+    m_uploadingPeerProgressRequests.remove(torrent);
+
     const auto iter = m_torrents.get<ByIndex>().begin() + row;
     beginRemoveRows({}, row, row);
     m_torrents.get<ByIndex>().erase(iter);
@@ -700,6 +721,9 @@ void TransferListModel::handleTorrentStatusUpdated(BitTorrent::Torrent *const to
 
 void TransferListModel::handleTorrentsUpdated(const QList<BitTorrent::Torrent *> &torrents)
 {
+    for (BitTorrent::Torrent *const torrent : torrents)
+        updateUploadingPeerProgress(torrent);
+
     const int columns = (columnCount() - 1);
 
     if (torrents.size() <= (m_torrents.size() * 0.5))
@@ -717,6 +741,68 @@ void TransferListModel::handleTorrentsUpdated(const QList<BitTorrent::Torrent *>
         // save the overhead when more than half of the torrent list needs update
         emit dataChanged(index(0, 0), index((rowCount() - 1), columns));
     }
+}
+
+namespace
+{
+    // A seeding torrent that is uploading right now (the same torrents that get the green arrows)
+    bool isActivelyUploading(const BitTorrent::Torrent *torrent)
+    {
+        const BitTorrent::TorrentState state = torrent->state();
+        return ((state == BitTorrent::TorrentState::Uploading) || (state == BitTorrent::TorrentState::ForcedUploading))
+                && (torrent->uploadPayloadRate() > 0);
+    }
+}
+
+void TransferListModel::updateUploadingPeerProgress(BitTorrent::Torrent *const torrent)
+{
+    if (!isActivelyUploading(torrent))
+    {
+        m_uploadingPeerProgress.remove(torrent);
+        return;
+    }
+
+    if (m_uploadingPeerProgressRequests.contains(torrent))
+        return;  // the previous request is still running
+
+    m_uploadingPeerProgressRequests.insert(torrent);
+    torrent->fetchPeerInfo().then(this, [this, torrent = QPointer<BitTorrent::Torrent>(torrent)](const QList<BitTorrent::PeerInfo> &peers)
+    {
+        if (!torrent)
+            return;
+
+        m_uploadingPeerProgressRequests.remove(torrent);
+        const int row = getTorrentRow(torrent);
+        if (row < 0)
+            return;
+
+        // The highest progress among the peers we are uploading to right now
+        std::optional<qreal> highestProgress;
+        for (const BitTorrent::PeerInfo &peer : peers)
+        {
+            if (peer.payloadUpSpeed() > 0)
+                highestProgress = std::max(highestProgress.value_or(0), peer.progress());
+        }
+
+        if (highestProgress && isActivelyUploading(torrent))
+            m_uploadingPeerProgress.insert(torrent, *highestProgress);
+        else
+            m_uploadingPeerProgress.remove(torrent);
+
+        const QModelIndex progressIndex = index(row, TR_PROGRESS);
+        emit dataChanged(progressIndex, progressIndex);
+    });
+}
+
+std::optional<qreal> TransferListModel::uploadingPeerProgress(const BitTorrent::Torrent *torrent) const
+{
+    if (!isActivelyUploading(torrent))
+        return std::nullopt;
+
+    const auto iter = m_uploadingPeerProgress.constFind(torrent);
+    if (iter == m_uploadingPeerProgress.cend())
+        return std::nullopt;
+    return *iter;
 }
 
 int TransferListModel::getTorrentRow(BitTorrent::Torrent *const torrent) const
