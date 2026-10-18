@@ -4,7 +4,7 @@ Private notes for Mankka. Nothing has been published; everything is local. The o
 qBittorrent project must **never** receive this code (no pull requests, issues or
 patches) — publishing means your **own** repository only.
 
-This is practical guidance, not legal advice.
+This is practical guidance, not legal advice. Status as of 2026-10-18.
 
 ---
 
@@ -13,24 +13,25 @@ This is practical guidance, not legal advice.
 qBittorrent's source code is GPLv2-or-later; the compiled program is GPLv3-or-later
 (some images are GPLv3), with an extra permission for linking OpenSSL.
 
-- [ ] Keep `COPYING`, `COPYING.GPLv2`, `COPYING.GPLv3`, `AUTHORS` and the copyright
-      headers in every file. Don't remove anyone's name.
-- [ ] Your changes are GPL too. Don't add restrictions (e.g. "no commercial use").
-- [ ] Say clearly that the files were changed, and when. The git history and
-      `LOCAL_CHANGES.md` do this; the README should mention it as well.
-- [ ] If you publish the `.exe` (e.g. as a GitHub Release): the complete source must be
-      available (the repository), and the release must include the licences of the
-      bundled libraries: Qt (LGPLv3), OpenSSL (Apache 2.0), Boost (BSL-1.0),
-      libtorrent (BSD) and zlib.
-- [ ] Keep the DB-IP credit (the About dialog has it). The flag images (flag-icons, MIT)
-      are already included by qBittorrent.
+- [x] `COPYING`, `COPYING.GPLv2`, `COPYING.GPLv3`, `AUTHORS` and the copyright headers in
+      every file are kept. Don't remove anyone's name.
+- [x] Your changes are GPL too; the README says so. Don't add restrictions (e.g. "no
+      commercial use").
+- [x] It's clear that the files were changed, and when: the git history,
+      `LOCAL_CHANGES.md` and the README.
+- [x] The release zip (`dist/mankkas-edition/package-release.ps1`) includes the licences
+      of the bundled parts — Qt (LGPLv3), OpenSSL (Apache 2.0), Boost (BSL-1.0),
+      libtorrent (BSD), zlib — plus COPYING and AUTHORS, in its `licenses` folder. The
+      complete source must stay available in the repository for as long as the zip is
+      offered.
+- [x] The DB-IP credit is in the About dialog, the README and `licenses/README.txt`.
 
 ## 2. Name and identity
 
 - [x] The name is "qBittorrent vX.Y.Z Mankka's Edition", and About says "Modifications ©
       2026 Mankka" — you own the copyright to your changes, not the whole program.
-- [ ] The README must say it is **unofficial and not affiliated with the qBittorrent
-      project**. (The About dialog already does.)
+- [x] The README and About say it is **unofficial and not affiliated with the qBittorrent
+      project**.
 - [ ] Don't use qBittorrent's logo as your own project's logo or GitHub avatar.
 - [ ] I don't know whether "qBittorrent" is a registered trademark. Other forks use the
       name (e.g. "qBittorrent Enhanced Edition"), but if the project ever asks you to
@@ -38,50 +39,50 @@ qBittorrent's source code is GPLv2-or-later; the compiled program is GPLv3-or-la
 
 ## 3. Privacy
 
-- [x] The author name in your commits is "Mankka" (fixed on 2026-10-18).
+- [x] The author name in your commits is "Mankka".
 - [x] Your commits use your GitHub private address
-      (`340949780+mankka-beep@users.noreply.github.com`) instead of your personal email
-      (changed on 2026-10-18). Keep "Keep my email addresses private" turned on in
-      GitHub → Settings → Emails.
-- [ ] `LOCAL_CHANGES.md` mentions local paths such as `C:\qbt-deps` and `%APPDATA%`. Harmless,
-      but you may want to tidy it.
+      (`340949780+mankka-beep@users.noreply.github.com`) instead of your personal email.
+      Keep "Keep my email addresses private" turned on in GitHub → Settings → Emails.
+- [ ] `LOCAL_CHANGES.md` mentions local paths such as `C:\qbt-deps` and `%APPDATA%`.
+      Harmless, but you may want to tidy it.
 
 ## 4. Trackers and fairness to others
 
-- [ ] The edition tells trackers it is qBittorrent 5.4.0. Some **private trackers forbid
-      modified clients**, even ones that look official. Mention this in the README so
-      users don't break their trackers' rules.
-- [ ] Bans only apply to seeding torrents, so downloads still use banned peers. That is
-      your choice to make, but say so in the README.
+- [x] The README warns that some **private trackers forbid modified clients** (the edition
+      tells trackers it is qBittorrent 5.4.0).
+- [x] The README and user guide say that bans only apply to seeding torrents.
 
 ## 5. Code written with AI help
 
-- [ ] Much of this edition was written with Claude (an AI assistant). The commits say so
-      ("Co-Authored-By: Claude"). It's honest to mention it in the README too.
+- [x] The README mentions that much of the edition was written with Claude; the commits
+      say so too ("Co-Authored-By: Claude").
 - [ ] You are responsible for the code you publish. Test each release yourself before
       uploading it.
-- [ ] qBittorrent's own rules (`AGENTS.md`) ask that AI-written contributions are not sent
-      to them — another reason never to open pull requests or issues upstream.
+- [x] Never send anything to the official project (qBittorrent's `AGENTS.md` also asks for
+      no AI-written contributions).
 
-## 6. Practical things for a GitHub release
+## 6. The repository and releases
 
-- [ ] Use your own repository (e.g. `github.com/<your-name>/qbittorrent-mankkas-edition`),
-      not a pull request or fork-contribution to the official project.
-- [ ] Decide whether to publish only the source, or also a ready-made `.exe`. A Windows
-      build needs the Qt/OpenSSL/Boost/libtorrent DLLs next to it (the build folder has
-      them), plus the licence files.
-- [ ] Document how to build it. The local build script `C:\qbt-deps\build-qbt.ps1`
-      contains your own folder paths; a cleaned-up copy can go into the repository.
-- [ ] Decide how much support you want to give: GitHub Issues can be turned off, or you
-      can say "provided as is".
-- [ ] Keep `master` as the official code and your changes on top, so you can move to new
-      qBittorrent releases later (that would be version v2.0.0 under the numbering rules).
+- [x] `README.md` is the edition's front page; qBittorrent's original is
+      `README.qBittorrent.md`.
+- [x] Support, security, contributing pages and the issue/pull request forms are the
+      edition's own and ask people not to report to the official project.
+- [x] qBittorrent's GitHub Actions workflows and Dependabot are removed (only the
+      pre-commit helper scripts are kept).
+- [x] Building: `dist/mankkas-edition/build-windows.ps1` and `docs/mankkas-edition/BUILDING.md`.
+- [x] Release zip: `dist/mankkas-edition/package-release.ps1` →
+      `release\qBittorrent-Mankkas-Edition-vX.Y.Z-win64.zip`, tested to start on its own.
+- [ ] Create your own repository on GitHub (e.g. `mankka-beep/qBittorrent-Mankkas-Edition`)
+      — **not** a fork-contribution to the official project.
+- [ ] Decide how much support you want to give (GitHub Issues can be turned off).
+- [ ] Keep `master` as the official code and your changes on `my-changes`, so you can move to
+      new qBittorrent releases later (that would be version v2.0.0).
 - [ ] Each release: raise the version number, update `LOCAL_CHANGES.md` and the user guide,
-      and tag the commit (e.g. `v1.1.0`).
+      build, run `package-release.ps1`, tag the commit (e.g. `v1.1.0`) and upload the zip.
 
 ## 7. Your personal story
 
-- [x] Written on 2026-10-18: the "Why I made this version?" section in `README_DRAFT.md`.
+- [x] Written on 2026-10-18: the "Why I made this version?" section in `README.md`.
 
 The questions that were used as a starting point, in case you want to add more later:
 

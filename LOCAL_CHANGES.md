@@ -18,9 +18,12 @@ The edition is called "qBittorrent vX.Y.Z Mankka's Edition" (`QBT_MOD_VERSION` i
 - **X + 1** (Y and Z back to 0): moving to a newer official qBittorrent release, or a
   big rework
 
+Changes that only affect the repository or the documents, not the program itself, don't
+change the version.
+
 | Version | Changes | Based on qBittorrent |
 |---|---|---|
-| v1.1.0 | 21–22 | v5.4.0alpha1 |
+| v1.1.0 | 21–23 (23: repository and release preparation only) | v5.4.0alpha1 |
 | v1.0.0 | 1–20 (first named version) | v5.4.0alpha1 |
 
 ## How to undo a change
@@ -29,7 +32,7 @@ Run these in `D:\qbt` with qBittorrent closed, then rebuild:
 
 ```
 git revert <commit>
-powershell -ExecutionPolicy Bypass -File C:\qbt-deps\build-qbt.ps1
+powershell -ExecutionPolicy Bypass -File dist\mankkas-edition\build-windows.ps1
 ```
 
 Revert newer changes before older ones they build on. For example, the Ban button
@@ -40,6 +43,23 @@ To see exactly what a change did: `git show <commit>`.
 To get the official program back completely: `git switch master`, then rebuild.
 
 ## Changes (newest first)
+
+### 23. Repository and release preparation (no change to the program) — commits `9ea8abfc2`, `c83fe8b19`, `f0be73ed3`, `16781ac78`, `f4272c860` (2026-10-18)
+
+- `README.md` is now the edition's front page (with download, install, feedback and build
+  sections); qBittorrent's own README is kept as `README.qBittorrent.md`.
+- `.github/SUPPORT.md`, `SECURITY.md`, `CONTRIBUTING.md`, the pull request template and the
+  issue forms ("Bug report", "Idea / feature request") describe the edition and ask people
+  not to report it to the official project. qBittorrent's funding link is removed.
+- qBittorrent's GitHub Actions workflows and Dependabot are removed; only the pre-commit
+  helper scripts in `.github/workflows/helper/pre-commit` are kept.
+- `dist/mankkas-edition/build-windows.ps1` builds the edition (folders as parameters,
+  Boost/libtorrent downloaded when missing); `docs/mankkas-edition/BUILDING.md` explains it.
+- `dist/mankkas-edition/package-release.ps1` makes
+  `release\qBittorrent-Mankkas-Edition-vX.Y.Z-win64.zip` with the program, Qt, the Visual
+  C++ runtime, the licences (`dist/mankkas-edition/licenses`), README, user guide and this
+  log. `release/` is ignored by git.
+- Undo with `git revert` of the commits above (newest first).
 
 ### 22. Named "Mankka's Edition", version v1.1.0 — commit `a5f6a3b9d` (2026-10-18)
 
