@@ -81,8 +81,9 @@ qBittorrent's source code is GPLv2-or-later; the compiled program is GPLv3-or-la
 
 ## 7. Your personal story
 
-`README_DRAFT.md` has a "Why I made this" section for your own words. Some questions
-that may help:
+- [x] Written on 2026-10-18: the "Why I made this version?" section in `README_DRAFT.md`.
+
+The questions that were used as a starting point, in case you want to add more later:
 
 - What were you missing in normal qBittorrent? What annoyed you?
 - What made you start changing it, and when?
