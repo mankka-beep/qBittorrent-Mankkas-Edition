@@ -23,6 +23,7 @@ change the version.
 
 | Version | Changes | Based on qBittorrent |
 |---|---|---|
+| v1.2.0 | 27 | v5.4.0alpha1 |
 | v1.1.2 | 26 | v5.4.0alpha1 |
 | v1.1.1 | 24–25 (25: packaging only) | v5.4.0alpha1 |
 | v1.1.0 | 21–23 (23: repository and release preparation only) | v5.4.0alpha1 |
@@ -45,6 +46,15 @@ To see exactly what a change did: `git show <commit>`.
 To get the official program back completely: `git switch master`, then rebuild.
 
 ## Changes (newest first)
+
+### 27. English is the default language, version v1.2.0 — commit `e9b89f6d9` (2026-10-18)
+
+Until the user chooses a language (Tools → Options → Behavior → Language), the program and
+the Web UI are in English instead of following the language of Windows. A language that was
+already chosen (the `[Preferences] General\Locale` setting) is kept.
+
+- Changed: `src/base/preferences.cpp` (`Preferences::getLocale()`), `src/base/version.h.in`
+- Undo with `git revert e9b89f6d9` (the default then follows Windows again).
 
 ### 26. Crash reports go to the edition, version v1.1.2 — commit `7ea484fd9` (2026-10-18)
 

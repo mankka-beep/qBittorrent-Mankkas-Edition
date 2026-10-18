@@ -7,7 +7,7 @@ statistics.
 > **This is not the official qBittorrent.** It is not affiliated with or endorsed by the
 > qBittorrent project. Please don't report problems with this edition to them.
 
-Current version: **v1.1.2**, based on qBittorrent v5.4.0alpha1.
+Current version: **v1.2.0**, based on qBittorrent v5.4.0alpha1.
 
 ## Why I made this version?
 
@@ -69,6 +69,9 @@ Good to know:
 - Only one qBittorrent can run at a time. If the official qBittorrent is already
   running, close it completely (tray icon → Exit) before starting this edition — the
   window title shows which one is running.
+- The program starts in **English**. Choose your own language in **Tools → Options →
+  Behavior → Language** (then restart the program). If you already chose a language in
+  qBittorrent before, it is kept.
 
 ## Things to know
 
