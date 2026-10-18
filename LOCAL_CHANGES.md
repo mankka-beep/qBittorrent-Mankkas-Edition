@@ -3,6 +3,11 @@
 Local-only modifications on the `my-changes` branch. `master` is an unmodified copy
 of the official qBittorrent source. Nothing here is pushed to GitHub.
 
+On 2026-10-18 the author name of all commits was changed from "Mankk" to "Mankka". That
+gave every commit a new ID; the IDs below are the new ones. (The text of the revert commit
+for change 5 still quotes the old ID of change 3.) The state before the rename is kept on
+the local branch `backup/before-author-rename`.
+
 ## Version numbers
 
 The edition is called "qBittorrent vX.Y.Z Mankka's Edition" (`QBT_MOD_VERSION` in
