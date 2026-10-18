@@ -72,13 +72,20 @@ qBittorrent's source code is GPLv2-or-later; the compiled program is GPLv3-or-la
 - [x] Building: `dist/mankkas-edition/build-windows.ps1` and `docs/mankkas-edition/BUILDING.md`.
 - [x] Release zip: `dist/mankkas-edition/package-release.ps1` →
       `release\qBittorrent-Mankkas-Edition-vX.Y.Z-win64.zip`, tested to start on its own.
-- [ ] Create your own repository on GitHub (e.g. `mankka-beep/qBittorrent-Mankkas-Edition`)
-      — **not** a fork-contribution to the official project.
-- [ ] Decide how much support you want to give (GitHub Issues can be turned off).
+- [x] The update check looks for the edition's own releases, and About links to the
+      edition's page and Issues (v1.1.1).
+- [ ] Create your own repository on GitHub named exactly
+      **`mankka-beep/qBittorrent-Mankkas-Edition`** — the update check and About links use
+      this name (`QBT_MOD_GITHUB_REPO` in `src/base/version.h.in`; change it and rebuild if
+      you choose another name). **Not** a fork-contribution to the official project.
+- [ ] Keep **Issues** turned on in the repository: About and the README send bug reports
+      and ideas there.
 - [ ] Keep `master` as the official code and your changes on `my-changes`, so you can move to
       new qBittorrent releases later (that would be version v2.0.0).
 - [ ] Each release: raise the version number, update `LOCAL_CHANGES.md` and the user guide,
-      build, run `package-release.ps1`, tag the commit (e.g. `v1.1.0`) and upload the zip.
+      build, run `package-release.ps1`, then publish a GitHub **Release** whose tag is the
+      version (e.g. `v1.1.1`) with the zip attached. The update check reads the tag of the
+      latest release, so the tag must be the version number.
 
 ## 7. Your personal story
 

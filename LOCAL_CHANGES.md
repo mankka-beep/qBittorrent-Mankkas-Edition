@@ -23,6 +23,7 @@ change the version.
 
 | Version | Changes | Based on qBittorrent |
 |---|---|---|
+| v1.1.1 | 24 | v5.4.0alpha1 |
 | v1.1.0 | 21–23 (23: repository and release preparation only) | v5.4.0alpha1 |
 | v1.0.0 | 1–20 (first named version) | v5.4.0alpha1 |
 
@@ -43,6 +44,23 @@ To see exactly what a change did: `git show <commit>`.
 To get the official program back completely: `git switch master`, then rebuild.
 
 ## Changes (newest first)
+
+### 24. Update check and About links lead to the edition, version v1.1.1 — commit `00a5136f4` (2026-10-18)
+
+- **Update check** (Help → Check for Updates and the automatic check) asks GitHub for the
+  latest release of the edition (`QBT_MOD_GITHUB_REPO` = `mankka-beep/qBittorrent-Mankkas-Edition`
+  in `src/base/version.h.in`) and compares its tag (e.g. `v1.1.2`) with `QBT_MOD_VERSION`.
+  It never looks at or offers the official qBittorrent any more. "Yes" and "Open
+  changelog..." open the edition's release page. Without releases (or without internet) it
+  reports no update and writes a warning to the log.
+- **About** (program and Web UI): the Forum and Bug Tracker links now lead to the edition's
+  GitHub page and its Issues; the qBittorrent home page link stays. The Web UI About also
+  says the edition is unofficial. Help → Donate still goes to qBittorrent.
+- If the repository gets a different name, change `QBT_MOD_GITHUB_REPO` **and** the two links
+  in `src/webui/www/private/views/about.html`, then rebuild.
+- Changed: `src/base/version.h.in`, `src/gui/programupdater.cpp/.h`, `src/gui/mainwindow.cpp`,
+  `src/gui/aboutdialog.cpp`, `src/webui/www/private/views/about.html`
+- Undo with `git revert 00a5136f4` (the program would offer official qBittorrent updates again).
 
 ### 23. Repository and release preparation (no change to the program) — commits `9ea8abfc2`, `c83fe8b19`, `f0be73ed3`, `16781ac78`, `f4272c860` (2026-10-18)
 

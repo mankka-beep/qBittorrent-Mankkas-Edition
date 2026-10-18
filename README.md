@@ -7,7 +7,7 @@ statistics.
 > **This is not the official qBittorrent.** It is not affiliated with or endorsed by the
 > qBittorrent project. Please don't report problems with this edition to them.
 
-Current version: **v1.1.0**, based on qBittorrent v5.4.0alpha1.
+Current version: **v1.1.1**, based on qBittorrent v5.4.0alpha1.
 
 ## Why I made this version?
 
@@ -53,6 +53,10 @@ See the [user guide](docs/mankkas-edition/USER_GUIDE.md) for how everything work
    **Releases** page of this repository.
 2. Unzip it to a folder of your choice, e.g. `C:\Programs\qBittorrent Mankka's Edition`.
 3. Start `qbittorrent.exe` from that folder. No installation is needed.
+
+To update: **Help → Check for Updates** tells you when a new release of this edition is
+out (it never offers the official qBittorrent). Download the new zip and unzip it over the
+old folder while qBittorrent is closed.
 
 Good to know:
 

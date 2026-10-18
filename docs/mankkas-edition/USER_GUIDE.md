@@ -1,6 +1,6 @@
 # qBittorrent Mankka's Edition — User Guide
 
-Version **v1.1.0**, based on qBittorrent v5.4.0alpha1.
+Version **v1.1.1**, based on qBittorrent v5.4.0alpha1.
 
 Mankka's Edition is an unofficial, modified version of qBittorrent for Windows. It adds
 tools for blocking peers by country, quicker banning, ban statistics, and a few visual
@@ -232,14 +232,22 @@ Open **View → Log** (the Execution Log at the bottom of the window):
 
 ## 12. Name, version and About
 
-- The window title shows **"qBittorrent v1.1.0 Mankka's Edition"**.
+- The window title shows **"qBittorrent v1.1.1 Mankka's Edition"**.
 - **Help → About** shows the edition name, the qBittorrent version it's based on, and
-  "Modifications © 2026 Mankka".
+  "Modifications © 2026 Mankka". Its links lead to the qBittorrent home page, the
+  edition's own GitHub page, and the edition's bug tracker (Issues).
 - To trackers and other peers the program still identifies itself as qBittorrent 5.4.0,
   because many trackers only accept known qBittorrent versions.
 - **Version numbers:** the second number goes up with each new feature or visible change,
   the third with each fix, and the first when the edition moves to a newer official
   qBittorrent release.
+
+**Updates.** **Help → Check for Updates** — and the automatic check, if "Check for program
+updates" is on in Options → Behavior — looks for new releases of **Mankka's Edition** on
+its GitHub page, never for the official qBittorrent. When a newer edition is available,
+it asks whether you want to download it and opens the release page. Download the zip and
+unzip it over your old folder (with qBittorrent closed). **Help → Donate** still goes to
+the official qBittorrent's donation page, to support the original project.
 
 ---
 
