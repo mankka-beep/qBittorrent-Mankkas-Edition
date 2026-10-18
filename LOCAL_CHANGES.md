@@ -21,6 +21,25 @@ To get the official program back completely: `git switch master`, then rebuild.
 
 ## Changes (newest first)
 
+### 20. Own version name, lighter green, peer progress on uploading seeds — commit `a58148118` (2026-10-18)
+
+- **Name:** the window title and the About dialog show "qBittorrent v1.0.0 Mankka © 2026"
+  (`QBT_DISPLAY_NAME` / `QBT_MOD_VERSION` in `src/base/version.h.in`). The About dialog
+  adds "Based on qBittorrent v5.4.0alpha1". The program still reports itself as
+  qBittorrent 5.4.0 to trackers and peers, so trackers that only allow known clients keep
+  working.
+- **Arrows:** the uploading arrows are the "Running" green `#32cd32` (was `#008000`).
+- **Progress bar:** while a seeding torrent is uploading (green arrows), the Progress bar
+  shows the highest progress of the peers it is uploading to, drawn in `#32cd32`. The
+  peers are read from the torrent's peer list on each list refresh, only for uploading
+  torrents. Downloading, idle or stopped torrents show their own progress as before.
+  Sorting by Progress still uses the torrent's own progress. No columns were added,
+  removed or moved.
+- Changed: `src/base/version.h.in`, `src/gui/aboutdialog.cpp`, `src/gui/mainwindow.cpp`,
+  `src/gui/transferlistmodel.cpp/.h`, `src/gui/transferlistdelegate.cpp`,
+  `src/icons/uploading.svg`
+- Undo with `git revert a58148118`.
+
 ### 19. "Unban" button in the "Total bans" window — commit `9a380867e` (2026-10-18)
 
 An "Unban" button in the lower left corner of the "Total bans" window (Close stays on the
