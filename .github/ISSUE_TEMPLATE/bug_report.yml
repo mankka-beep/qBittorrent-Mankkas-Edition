@@ -15,7 +15,7 @@ body:
     attributes:
       label: Edition version
       description: Shown in the window title and in Help → About.
-      placeholder: "qBittorrent v1.1.1 Mankka's Edition"
+      placeholder: "qBittorrent v1.1.2 Mankka's Edition"
     validations:
       required: true
 

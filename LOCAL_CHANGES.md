@@ -23,6 +23,7 @@ change the version.
 
 | Version | Changes | Based on qBittorrent |
 |---|---|---|
+| v1.1.2 | 26 | v5.4.0alpha1 |
 | v1.1.1 | 24–25 (25: packaging only) | v5.4.0alpha1 |
 | v1.1.0 | 21–23 (23: repository and release preparation only) | v5.4.0alpha1 |
 | v1.0.0 | 1–20 (first named version) | v5.4.0alpha1 |
@@ -44,6 +45,16 @@ To see exactly what a change did: `git show <commit>`.
 To get the official program back completely: `git switch master`, then rebuild.
 
 ## Changes (newest first)
+
+### 26. Crash reports go to the edition, version v1.1.2 — commit `7ea484fd9` (2026-10-18)
+
+If the program crashes, the crash window now says "qBittorrent Mankka's Edition has crashed",
+asks for a bug report at the edition's GitHub Issues (`QBT_MOD_GITHUB_URL`/issues) instead of
+qBittorrent's bug tracker, asks not to report it to the official project, and shows the
+edition's name and version above the technical details.
+
+- Changed: `src/gui/stacktracedialog.cpp`, `src/base/version.h.in`
+- Undo with `git revert 7ea484fd9`.
 
 ### 25. Qt's translations in the build and the release zip (packaging only) — commit `601b26487` (2026-10-18)
 

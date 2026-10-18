@@ -7,7 +7,7 @@ statistics.
 > **This is not the official qBittorrent.** It is not affiliated with or endorsed by the
 > qBittorrent project. Please don't report problems with this edition to them.
 
-Current version: **v1.1.1**, based on qBittorrent v5.4.0alpha1.
+Current version: **v1.1.2**, based on qBittorrent v5.4.0alpha1.
 
 ## Why I made this version?
 
