@@ -1,19 +1,21 @@
-# Security Policy
+# Security Policy — qBittorrent Mankka's Edition
 
-qBittorrent takes the security of our software seriously, including all source code repositories managed through our GitHub organisation.
-If you believe you have found a security vulnerability in qBittorrent, please report it to us as described below.
+This is an unofficial, modified version of qBittorrent maintained by one person.
 
-## Reporting Security Issues
+## Reporting a security problem
 
-Please do not report security vulnerabilities through public GitHub issues. Instead, please use GitHub's private vulnerability reporting functionality associated to this repository. Additionally, you may email us with all security-related inquiries and notifications at `security@qbittorrent.org`.
+Please **don't** post security problems in public issues. Use GitHub's **private
+vulnerability reporting** for this repository instead (the "Security" tab → "Report a
+vulnerability").
 
-Please include the requested information listed below (as much as you can provide) to help us better understand the nature and scope of the possible issue:
+Please include, as far as you can:
 
-1. Type of issue
-2. Step-by-step instructions to reproduce the issue
-3. Proof-of-concept or exploit code (if possible)
-4. Potential impact of the issue, including how an attacker might exploit the issue
+1. The type of problem
+2. Steps to reproduce it
+3. What an attacker could do with it
 
-This information will help us triage your report more quickly. Any and all CVEs will be requested and issued through GitHub's private vulnerability reporting functionality, which will be published alongside the disclosure.
+Only the newest release of the edition is supported.
 
-This security policy only applies to the most recent stable branch of qBittorrent. Flaws in old versions that are not present in the current stable branch will not be fixed.
+If the problem also exists in the official qBittorrent (i.e. it isn't caused by the
+edition's own changes), please report it to the official project through **their**
+security policy instead — but don't mention or send them this edition's code.

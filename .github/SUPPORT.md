@@ -1,18 +1,16 @@
-# Support Resources
+# Support — qBittorrent Mankka's Edition
 
-The issue tracker is only for bug reports/feature requests related to the project itself.
+This is an unofficial, modified version of qBittorrent, maintained by one person in
+their free time. Please be patient — answers may take a while.
 
-Please do not use the issue tracker for questions about general program usage,
-how BitTorrent (the protocol) works in general, etc.
+* **How things work:** read the [user guide](../docs/mankkas-edition/USER_GUIDE.md) first.
+* **Bugs in the edition's features:** open an issue with the "Bug report" form.
+* **Ideas and improvements:** very welcome! Open an issue with the "Idea / feature
+  request" form.
+* **General qBittorrent questions** (settings, how BitTorrent works, …): the official
+  qBittorrent [wiki](https://github.com/qbittorrent/qBittorrent/wiki) has a lot of
+  useful information.
 
-For such questions, use one of the following community support resources:
-
-* The [discussions section][discussions-url]
-
-* The [official forum][forum-url]
-
-* The [qBittorrent subreddit][subreddit-url]
-
-[discussions-url]: https://github.com/qbittorrent/qBittorrent/discussions
-[forum-url]: http://forum.qbittorrent.org/
-[subreddit-url]: https://www.reddit.com/r/qBittorrent/
+**Please don't report problems with this edition to the official qBittorrent project**
+(its issue tracker, forum or subreddit). They don't support modified versions, and the
+problem may well be caused by this edition.
