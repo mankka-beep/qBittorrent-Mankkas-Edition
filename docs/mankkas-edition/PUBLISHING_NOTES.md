@@ -39,10 +39,10 @@ qBittorrent's source code is GPLv2-or-later; the compiled program is GPLv3-or-la
 ## 3. Privacy
 
 - [x] The author name in your commits is "Mankka" (fixed on 2026-10-18).
-- [ ] Your commits contain your email **mankka@gmail.com**. GitHub shows it publicly.
-      If you'd rather hide it, the commits can be rewritten to GitHub's private address
-      (`<id>+username@users.noreply.github.com`, shown in GitHub → Settings → Emails)
-      before publishing. Ask Claude to do this when the time comes.
+- [x] Your commits use your GitHub private address
+      (`340949780+mankka-beep@users.noreply.github.com`) instead of your personal email
+      (changed on 2026-10-18). Keep "Keep my email addresses private" turned on in
+      GitHub → Settings → Emails.
 - [ ] `LOCAL_CHANGES.md` mentions local paths such as `C:\qbt-deps` and `%APPDATA%`. Harmless,
       but you may want to tidy it.
 
