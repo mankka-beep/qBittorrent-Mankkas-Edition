@@ -57,7 +57,8 @@ AboutDialog::AboutDialog(QWidget *parent)
 
     // Title
     m_ui->labelName->setText(QStringLiteral("<b><h2>" QBT_DISPLAY_NAME " (%1-bit)</h2></b>"
-            "<small>Based on qBittorrent " QBT_VERSION "</small>").arg(QT_POINTER_SIZE * 8));
+            "<small>Based on qBittorrent " QBT_VERSION ". " QBT_MOD_COPYRIGHT ".<br/>"
+            "Unofficial edition, not affiliated with the qBittorrent project.</small>").arg(QT_POINTER_SIZE * 8));
 
     m_ui->logo->setPixmap(UIThemeManager::instance()->getScaledPixmap(u"qbittorrent-tray"_s, 32));
 
