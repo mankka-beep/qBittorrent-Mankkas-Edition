@@ -11,18 +11,17 @@ Current version: **v1.1.0**, based on qBittorrent v5.4.0alpha1.
 
 ## Why I made this version?
 
-I made this based on my own needs to develop qBittorrent for my own needs as I share a lot but then I realized that maybe someone else has been thinking about the same issues?
+I made this to develop qBittorrent for my own needs, as I share a lot, but then I realized that maybe someone else has been thinking about the same issues.
 
 This first version is heavily focusing on banning uploading peers & based on my own needs, why?
 
-For example: I got tired of Chinese bots taking up all my upload slots just sitting there while using my bandwith in the background.
+For example: I got tired of Chinese bots taking up all my upload slots just sitting there while using my bandwidth in the background.
 
 But you are of course free to use it in your own way for your own purposes.
 
-It also has some neat improvements to the application to make your life easier and more in control of what's is
-happening, especially when seeding.
+It also has some neat improvements to the application to make your life easier and more in control of what is happening, especially when seeding.
 
-I'm totally opened to all improvements, critics, new ideas and so on, I'm all ears!
+I'm totally open to all improvements, criticism, new ideas and so on, I'm all ears!
 
 If you have good & creative ideas how to improve the application they are very much appreciated & I'll see if I'm able to implement them.
 
