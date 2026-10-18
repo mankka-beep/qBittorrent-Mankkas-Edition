@@ -31,6 +31,7 @@
 
 #include <QMainWindow>
 #include <QPointer>
+#include <QSet>
 
 #include "base/bittorrent/torrent.h"
 #include "base/logger.h"
@@ -40,6 +41,7 @@
 
 class QCloseEvent;
 class QComboBox;
+class QFrame;
 class QFileSystemWatcher;
 class QPushButton;
 class QSplitter;
@@ -209,6 +211,7 @@ private:
     void applyTransferListFilter();
     void populateCountryComboBox();
     void banPeersFromCheckedCountries();
+    void autoBanConnectedPeer(const QString &ip);
     void showBanNotification(const QString &message, const QString &footer = {});
     void refreshWindowTitle();
     void refreshTrayIconTooltip();
@@ -258,7 +261,8 @@ private:
     CountryComboBox *m_countryComboBox = nullptr;
     QPushButton *m_banCountryButton = nullptr;
     QPushButton *m_autoBanButton = nullptr;
-    QTimer *m_autoBanTimer = nullptr;
+    QSet<QString> m_autoBanCountryCodes;
+    QPointer<QFrame> m_banNotification;
     bool m_banInProgress = false;
     // Widgets
     QAction *m_queueSeparator = nullptr;

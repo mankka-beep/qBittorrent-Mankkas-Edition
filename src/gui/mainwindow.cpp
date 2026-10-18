@@ -317,38 +317,35 @@ MainWindow::MainWindow(IGUIApplication *app, const WindowState initialState, con
     m_banCountryButton->setToolTip(tr("Permanently ban all connected peers from the checked countries"));
     m_banCountryButton->setEnabled(!m_countryComboBox->checkedCountryCodes().isEmpty());
     connect(m_banCountryButton, &QPushButton::clicked, this, &MainWindow::banPeersFromCheckedCountries);
+    const QStringList initiallyCheckedCountryCodes = m_countryComboBox->checkedCountryCodes();
+    m_autoBanCountryCodes = {initiallyCheckedCountryCodes.cbegin(), initiallyCheckedCountryCodes.cend()};
     connect(m_countryComboBox, &CountryComboBox::checkedCountriesChanged, this, [this]
     {
         const QStringList codes = m_countryComboBox->checkedCountryCodes();
         m_storeBanCheckedCountries = codes;
+        m_autoBanCountryCodes = {codes.cbegin(), codes.cend()};
         m_banCountryButton->setEnabled(!codes.isEmpty() && !m_banInProgress);
     });
     m_ui->toolBar->insertWidget(spacerAction, m_banCountryButton);
 
-    // Auto Ban: red = off, green = on. When on, the ban runs right away and then once a minute.
+    // Auto Ban: red = off, green = on. When turned on, the peers already connected are checked
+    // once, and from then on every new peer connection right when it is made.
     // It always starts off.
     m_autoBanButton = new QPushButton(tr("Auto Ban"), this);
     m_autoBanButton->setCheckable(true);
-    m_autoBanButton->setToolTip(tr("Red: off. Green: bans peers from the checked countries once a minute"));
+    m_autoBanButton->setToolTip(tr("Red: off. Green: bans peers from the checked countries as soon as they connect"));
     m_autoBanButton->setStyleSheet(u"QPushButton { background-color: #c62828; color: white; border: 1px solid #8e0000;"
             " border-radius: 4px; padding: 3px 10px; }"
             " QPushButton:hover { background-color: #d84343; }"
             " QPushButton:checked { background-color: #2e7d32; border-color: #1b5e20; }"
             " QPushButton:checked:hover { background-color: #43a047; }"_s);
-    m_autoBanTimer = new QTimer(this);
-    m_autoBanTimer->setInterval(1min);
-    connect(m_autoBanTimer, &QTimer::timeout, this, &MainWindow::banPeersFromCheckedCountries);
+    connect(BitTorrent::Session::instance(), &BitTorrent::Session::peerConnected, this, &MainWindow::autoBanConnectedPeer);
     connect(m_autoBanButton, &QPushButton::toggled, this, [this](const bool enabled)
     {
+        // New peer connections are only reported while Auto Ban is on
+        BitTorrent::Session::instance()->setPeerConnectedNotificationEnabled(enabled);
         if (enabled)
-        {
-            m_autoBanTimer->start();
             banPeersFromCheckedCountries();
-        }
-        else
-        {
-            m_autoBanTimer->stop();
-        }
     });
     m_ui->toolBar->insertWidget(spacerAction, m_autoBanButton);
 
@@ -2109,9 +2106,37 @@ void MainWindow::banPeersFromCheckedCountries()
     });
 }
 
+void MainWindow::autoBanConnectedPeer(const QString &ip)
+{
+    if (!m_autoBanButton->isChecked() || m_autoBanCountryCodes.isEmpty())
+        return;
+
+    // Uses the loaded GeoIP database, so it needs "Resolve peer countries" to be enabled
+    const QString countryCode = Net::GeoIPManager::instance()->lookup(QHostAddress(ip));
+    if (!m_autoBanCountryCodes.contains(countryCode))
+        return;
+
+    auto *session = BitTorrent::Session::instance();
+    if (session->bannedIPs().contains(ip))
+        return;
+
+    session->banIP(ip);
+    // Same log entry (and translation) as banning a peer manually from the peer list
+    LogMsg(QCoreApplication::translate("PeerListWidget", "Peer \"%1\" is manually banned").arg(ip));
+    BanCounter::addBanned(1);
+
+    showBanNotification(tr("%1 from %2 banned").arg(ip, Net::GeoIPManager::CountryName(countryCode))
+            , tr("Today: %1").arg(BanCounter::bannedToday()));
+}
+
 void MainWindow::showBanNotification(const QString &message, const QString &footer)
 {
+    // A new box replaces the previous one (Auto Ban can ban several peers in a row)
+    if (m_banNotification)
+        m_banNotification->close();
+
     auto *notification = new QFrame(this, (Qt::ToolTip | Qt::FramelessWindowHint));
+    m_banNotification = notification;
     notification->setAttribute(Qt::WA_DeleteOnClose);
     notification->setAttribute(Qt::WA_ShowWithoutActivating);
     notification->setPalette(QToolTip::palette());
@@ -2153,7 +2178,7 @@ void MainWindow::showBanNotification(const QString &message, const QString &foot
             , (screenArea.bottom() + 1 - screenMargin - notification->height()));
     notification->show();
 
-    QTimer::singleShot(5s, notification, &QWidget::close);
+    QTimer::singleShot(3s, notification, &QWidget::close);
 }
 
 void MainWindow::refreshWindowTitle()

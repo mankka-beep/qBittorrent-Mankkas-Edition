@@ -32,16 +32,21 @@
 #include <QtSystemDetection>
 
 #include <algorithm>
+#include <optional>
 
+#include <QAbstractItemView>
 #include <QApplication>
 #include <QClipboard>
 #include <QFontMetrics>
+#include <QHelpEvent>
 #include <QKeyEvent>
 #include <QPainter>
 #include <QStyle>
 #include <QStyledItemDelegate>
+#include <QToolTip>
 
 #include "base/global.h"
+#include "base/net/geoipmanager.h"
 #include "gui/uithememanager.h"
 #include "logmodel.h"
 
@@ -97,13 +102,7 @@ namespace
             const QPalette::ColorRole textRole = option.state.testFlag(QStyle::State_Selected) ? QPalette::HighlightedText : QPalette::WindowText;
 #endif
 
-            // for unknown reasons (fixme) painter won't accept some font properties
-            // until they are set explicitly, and we have to manually set some font properties
-            QFont font = option.font;
-            font.setFamily(option.font.family());
-            if (option.font.pointSizeF() > 0) // for better scaling we use floating point version
-                font.setPointSizeF(option.font.pointSizeF());
-            painter->setFont(font);
+            painter->setFont(itemFont(option));
 
             QPalette palette = option.palette;
 
@@ -121,35 +120,85 @@ namespace
             palette.setColor(QPalette::Active, QPalette::WindowText, index.data(BaseLogModel::MessageForegroundRole).value<QColor>());
 
             // Blocked/banned peers: the country flag of the IP address is shown right after the address
-            const QString ip = index.data(BaseLogModel::IPRole).toString();
-            const QString countryCode = index.data(BaseLogModel::CountryCodeRole).toString();
-            const qsizetype ipPosition = (ip.isEmpty() || countryCode.isEmpty()) ? -1 : message.indexOf(ip);
-            if (ipPosition < 0)
+            if (const std::optional<FlagLayout> flag = flagLayout(option, index, fontMetrics); !flag)
             {
                 style->drawItemText(painter, textRect.adjusted(messageCoordinateX, 0, 0, 0), option.displayAlignment, palette
                                     , isEnabled, message, textRole);
             }
             else
             {
-                // An address in quotes ("1.2.3.4") gets its flag after the closing quote
-                qsizetype flagPosition = ipPosition + ip.size();
-                if ((flagPosition < message.size()) && (message[flagPosition] == u'"'))
-                    ++flagPosition;
-
-                const QString beforeFlag = message.left(flagPosition);
-                const QString afterFlag = message.mid(flagPosition);
                 style->drawItemText(painter, textRect.adjusted(messageCoordinateX, 0, 0, 0), option.displayAlignment, palette
-                                    , isEnabled, beforeFlag, textRole);
+                                    , isEnabled, message.left(flag->textPosition), textRole);
 
-                const QRect flagRect = flagRectAt((textRect.left() + messageCoordinateX + horizontalAdvance(fontMetrics, beforeFlag)), option.rect);
-                UIThemeManager::instance()->getFlagIcon(countryCode).paint(painter, flagRect);
+                UIThemeManager::instance()->getFlagIcon(flag->countryCode).paint(painter, flag->rect);
 
-                const int afterFlagCoordinateX = (flagRect.right() + 1 + FLAG_MARGIN) - textRect.left();
+                const int afterFlagCoordinateX = (flag->rect.right() + 1 + FLAG_MARGIN) - textRect.left();
                 style->drawItemText(painter, textRect.adjusted(afterFlagCoordinateX, 0, 0, 0), option.displayAlignment, palette
-                                    , isEnabled, afterFlag, textRole);
+                                    , isEnabled, message.mid(flag->textPosition), textRole);
             }
 
             painter->restore();
+        }
+
+        // Hovering over a flag shows the name of its country
+        bool helpEvent(QHelpEvent *event, QAbstractItemView *view, const QStyleOptionViewItem &option, const QModelIndex &index) override
+        {
+            if (event->type() != QEvent::ToolTip)
+                return QStyledItemDelegate::helpEvent(event, view, option, index);
+
+            const QFontMetrics fontMetrics {itemFont(option), view->viewport()};
+            if (const std::optional<FlagLayout> flag = flagLayout(option, index, fontMetrics); flag && flag->rect.contains(event->pos()))
+            {
+                QToolTip::showText(event->globalPos(), Net::GeoIPManager::CountryName(flag->countryCode), view->viewport(), flag->rect);
+                return true;
+            }
+
+            QToolTip::hideText();
+            return true;
+        }
+
+        struct FlagLayout
+        {
+            QString countryCode;
+            qsizetype textPosition = 0;  // the flag is drawn before this character of the message
+            QRect rect;
+        };
+
+        // Where the country flag of a blocked/banned peer goes, if the row has one
+        static std::optional<FlagLayout> flagLayout(const QStyleOptionViewItem &option, const QModelIndex &index, const QFontMetrics &fontMetrics)
+        {
+            const QString ip = index.data(BaseLogModel::IPRole).toString();
+            const QString countryCode = index.data(BaseLogModel::CountryCodeRole).toString();
+            if (ip.isEmpty() || countryCode.isEmpty())
+                return std::nullopt;
+
+            const QString message = index.data(BaseLogModel::MessageRole).toString();
+            const qsizetype ipPosition = message.indexOf(ip);
+            if (ipPosition < 0)
+                return std::nullopt;
+
+            // An address in quotes ("1.2.3.4") gets its flag after the closing quote
+            qsizetype textPosition = ipPosition + ip.size();
+            if ((textPosition < message.size()) && (message[textPosition] == u'"'))
+                ++textPosition;
+
+            const QRect textRect = option.rect.adjusted(1, 0, 0, 0);
+            const int messageX = textRect.left()
+                    + horizontalAdvance(fontMetrics, index.data(BaseLogModel::TimeRole).toString())
+                    + horizontalAdvance(fontMetrics, SEPARATOR);
+            const int textEndX = messageX + horizontalAdvance(fontMetrics, message.left(textPosition));
+            return FlagLayout {countryCode, textPosition, flagRectAt(textEndX, option.rect)};
+        }
+
+        // for unknown reasons (fixme) painter won't accept some font properties
+        // until they are set explicitly, and we have to manually set some font properties
+        static QFont itemFont(const QStyleOptionViewItem &option)
+        {
+            QFont font = option.font;
+            font.setFamily(option.font.family());
+            if (option.font.pointSizeF() > 0) // for better scaling we use floating point version
+                font.setPointSizeF(option.font.pointSizeF());
+            return font;
         }
 
         QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const override

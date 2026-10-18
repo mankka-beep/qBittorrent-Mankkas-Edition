@@ -34,6 +34,7 @@
 #include <utility>
 #include <vector>
 
+#include <libtorrent/alert.hpp>
 #include <libtorrent/fwd.hpp>
 #include <libtorrent/portmap.hpp>
 #include <libtorrent/torrent_handle.hpp>
@@ -462,6 +463,7 @@ namespace BitTorrent
         bool isListening() const override;
 
         void banIP(const QString &ip) override;
+        void setPeerConnectedNotificationEnabled(bool enabled) override;
 
         bool isKnownTorrent(const InfoHash &infoHash) const override;
         bool addTorrent(const TorrentDescriptor &torrentDescr, const AddTorrentParams &params = {}) override;
@@ -575,6 +577,7 @@ namespace BitTorrent
         void configureComponents();
         void initializeNativeSession();
         lt::settings_pack loadLTSettings() const;
+        lt::alert_category_t alertMask() const;
         void applyNetworkInterfacesSettings(lt::settings_pack &settingsPack) const;
         void configurePeerClasses();
         void initMetrics();
@@ -614,6 +617,7 @@ namespace BitTorrent
         void handlePortmapAlert(const lt::portmap_alert *alert);
         void handlePeerBlockedAlert(const lt::peer_blocked_alert *alert);
         void handlePeerBanAlert(const lt::peer_ban_alert *alert);
+        void handlePeerConnectAlert(const lt::peer_connect_alert *alert);
         void handleUrlSeedAlert(const lt::url_seed_alert *alert);
         void handleListenSucceededAlert(const lt::listen_succeeded_alert *alert);
         void handleListenFailedAlert(const lt::listen_failed_alert *alert);
@@ -906,6 +910,7 @@ namespace BitTorrent
         // so there are no synchronization used. If multithreaded access is
         // ever required, synchronization should also be provided.
         bool m_isPortMappingEnabled = false;
+        bool m_isPeerConnectedNotificationEnabled = false;
         QHash<quint16, std::vector<lt::port_mapping_t>> m_mappedPorts;
 
         QElapsedTimer m_wakeupCheckTimestamp;

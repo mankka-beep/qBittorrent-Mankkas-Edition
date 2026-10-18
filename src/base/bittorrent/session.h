@@ -485,6 +485,8 @@ namespace BitTorrent
         virtual bool isListening() const = 0;
 
         virtual void banIP(const QString &ip) = 0;
+        // While enabled, every new peer connection is reported with peerConnected()
+        virtual void setPeerConnectedNotificationEnabled(bool enabled) = 0;
 
         virtual bool isKnownTorrent(const InfoHash &infoHash) const = 0;
         virtual bool addTorrent(const TorrentDescriptor &torrentDescr, const AddTorrentParams &params = {}) = 0;
@@ -522,6 +524,7 @@ namespace BitTorrent
         void torrentsLoaded(const QList<Torrent *> &torrents);
         void torrentsUpdated(const QList<Torrent *> &torrents);
         void freeDiskSpaceChecked(qint64 result);
+        void peerConnected(const QString &ip);
 
         void torrentAboutToBeRemoved(Torrent *torrent);
         void torrentAdded(Torrent *torrent);

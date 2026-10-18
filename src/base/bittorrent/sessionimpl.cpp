@@ -1974,11 +1974,9 @@ void SessionImpl::initMetrics()
     };
 }
 
-lt::settings_pack SessionImpl::loadLTSettings() const
+lt::alert_category_t SessionImpl::alertMask() const
 {
-    lt::settings_pack settingsPack;
-
-    const lt::alert_category_t alertMask = lt::alert::error_notification
+    return lt::alert::error_notification
         | lt::alert::file_progress_notification
         | lt::alert::ip_block_notification
         | lt::alert::peer_notification
@@ -1986,8 +1984,16 @@ lt::settings_pack SessionImpl::loadLTSettings() const
         | lt::alert::port_mapping_notification
         | lt::alert::status_notification
         | lt::alert::storage_notification
-        | lt::alert::tracker_notification;
-    settingsPack.set_int(lt::settings_pack::alert_mask, alertMask);
+        | lt::alert::tracker_notification
+        // peer_connect_alert, only while peer connections are being reported
+        | (m_isPeerConnectedNotificationEnabled ? lt::alert::connect_notification : lt::alert_category_t());
+}
+
+lt::settings_pack SessionImpl::loadLTSettings() const
+{
+    lt::settings_pack settingsPack;
+
+    settingsPack.set_int(lt::settings_pack::alert_mask, alertMask());
 
     settingsPack.set_int(lt::settings_pack::connection_speed, connectionSpeed());
     settingsPack.set_bool(lt::settings_pack::seeding_outgoing_connections, isSeedingOutgoingConnectionsEnabled());
@@ -2642,6 +2648,18 @@ void SessionImpl::banIP(const QString &ip)
     bannedIPs.append(ip);
     bannedIPs.sort();
     m_bannedIPs = bannedIPs;
+}
+
+void SessionImpl::setPeerConnectedNotificationEnabled(const bool enabled)
+{
+    if (enabled == m_isPeerConnectedNotificationEnabled)
+        return;
+
+    m_isPeerConnectedNotificationEnabled = enabled;
+
+    lt::settings_pack settingsPack;
+    settingsPack.set_int(lt::settings_pack::alert_mask, alertMask());
+    m_nativeSession->apply_settings(std::move(settingsPack));
 }
 
 // Delete a torrent from the session, given its hash
@@ -6218,6 +6236,9 @@ void SessionImpl::handleAlert(lt::alert *alert)
         case lt::peer_ban_alert::alert_type:
             handlePeerBanAlert(static_cast<const lt::peer_ban_alert *>(alert));
             break;
+        case lt::peer_connect_alert::alert_type:
+            handlePeerConnectAlert(static_cast<const lt::peer_connect_alert *>(alert));
+            break;
         case lt::url_seed_alert::alert_type:
             handleUrlSeedAlert(static_cast<const lt::url_seed_alert *>(alert));
             break;
@@ -6488,6 +6509,25 @@ void SessionImpl::handlePeerBanAlert(const lt::peer_ban_alert *alert)
     const QString ip {toString(ipEndpoint.address())};
     if (!ip.isEmpty())
         Logger::instance()->addPeer(ip, false);
+}
+
+void SessionImpl::handlePeerConnectAlert(const lt::peer_connect_alert *alert)
+{
+#if LIBTORRENT_VERSION_NUM >= 20100
+    using TCPEndpoint = lt::aux::noexcept_movable<lt::tcp::endpoint>;
+    if (!std::holds_alternative<TCPEndpoint>(alert->ep))
+        return;  // I2P peers have no IP address
+    const lt::tcp::endpoint ipEndpoint = std::get<TCPEndpoint>(alert->ep);
+#else
+    const lt::tcp::endpoint &ipEndpoint = alert->endpoint;
+#endif
+
+    if (ipEndpoint.address().is_unspecified())
+        return;
+
+    const QString ip {toString(ipEndpoint.address())};
+    if (!ip.isEmpty())
+        emit peerConnected(ip);
 }
 
 void SessionImpl::handleUrlSeedAlert(const lt::url_seed_alert *alert)
