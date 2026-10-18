@@ -21,6 +21,17 @@ To get the official program back completely: `git switch master`, then rebuild.
 
 ## Changes (newest first)
 
+### 16. Flags after banned IPs in the Execution Log tab — commit `53b90aeb7` (2026-10-18)
+
+In Execution Log → Execution Log, messages about banned peers show the IP's country
+flag right after the IP address, drawn the same way as in the Blocked IPs tab. The
+messages recognized (also when translated) are `Peer "<ip>" is manually banned`
+(Peers tab, Ban, Auto Ban; the flag goes after the closing quote) and
+`IP banned by libtorrent. IP: <ip>.`. Other messages are unchanged.
+
+- Changed: `src/gui/log/logmodel.cpp`, `src/gui/log/loglistview.cpp`
+- Undo with `git revert 53b90aeb7`.
+
 ### 15. Ban box in the lower left corner, flags in the Blocked IPs tab — commit `690d84d70` (2026-10-18)
 
 - The 5-second result box after "Ban" / "Auto Ban" now appears in the lower left
