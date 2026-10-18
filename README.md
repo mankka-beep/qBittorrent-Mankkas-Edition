@@ -1,60 +1,101 @@
-# qBittorrent - A BitTorrent client in Qt
+# qBittorrent Mankka's Edition
 
-[![GitHub Actions CI Status](https://github.com/qbittorrent/qBittorrent/actions/workflows/ci_ubuntu.yaml/badge.svg)](https://github.com/qbittorrent/qBittorrent/actions)
-[![Coverity Status](https://scan.coverity.com/projects/5494/badge.svg)](https://scan.coverity.com/projects/5494)
+An **unofficial**, modified version of [qBittorrent](https://www.qbittorrent.org/) for
+Windows with extra tools for blocking peers by country, faster banning and ban
+statistics.
 
-qBittorrent is a [BitTorrent] client programmed in C++ / Qt that uses
-[libtorrent] (sometimes called libtorrent-rasterbar) by Arvid Norberg.
+> **This is not the official qBittorrent.** It is not affiliated with or endorsed by the
+> qBittorrent project. Please don't report problems with this edition to them.
 
-It aims to be a good alternative to all other BitTorrent clients
-out there. qBittorrent is fast, stable and provides Unicode
-support as well as many features.
+Current version: **v1.1.0**, based on qBittorrent v5.4.0alpha1.
 
-The free [IP to Country Lite database] by [DB-IP] is used for resolving the countries of peers.
-The database is licensed under the [Creative Commons Attribution 4.0 International License].
+## Why I made this version?
 
-[BitTorrent]: https://en.wikipedia.org/wiki/BitTorrent
-[Creative Commons Attribution 4.0 International License]: https://creativecommons.org/licenses/by/4.0/
-[DB-IP]: https://db-ip.com/
-[IP to Country Lite database]: https://db-ip.com/db/download/ip-to-country-lite
-[libtorrent]: https://libtorrent.org/
+I made this to develop qBittorrent for my own needs, as I share a lot, but then I realized that maybe someone else has been thinking about the same issues.
 
-## Installation
+This first version is heavily focusing on banning uploading peers & based on my own needs, why?
 
-Refer to the [INSTALL] file.
+For example: I got tired of Chinese bots taking up all my upload slots just sitting there while using my bandwidth in the background.
 
-[INSTALL]: INSTALL
+But you are of course free to use it in your own way for your own purposes.
 
-## License
+It also has some neat improvements to the application to make your life easier and more in control of what is happening, especially when seeding.
 
-Refer to the [COPYING] file.
+I'm totally open to all improvements, criticism, new ideas and so on, I'm all ears!
 
-[COPYING]: COPYING
+If you have good & creative ideas how to improve the application they are very much appreciated & I'll see if I'm able to implement them.
 
-## PGP Public Key
+Keep on Torrenting!
 
-Starting from v3.3.4 all source tarballs and binaries are signed. \
-The key currently used is 4096R/[5B7CC9A2](https://pgp.mit.edu/pks/lookup?op=get&search=0x6E4A2D025B7CC9A2) with fingerprint `D8F3DA77AAC6741053599C136E4A2D025B7CC9A2`. \
-You can also [download it](https://github.com/qbittorrent/qBittorrent/raw/master/5B7CC9A2.asc). \
-**PREVIOUSLY** the following key was used to sign the v3.3.4 source tarballs and v3.3.4 Windows installer **only**: 4096R/[520EC6F6](https://pgp.mit.edu/pks/lookup?op=get&search=0xA1ACCAE4520EC6F6) with fingerprint `F4A5FD201B117B1C2AB590E2A1ACCAE4520EC6F6`.
+Mankka
 
-## Misc
+## What's different from qBittorrent
 
-For more information please visit:
-<https://www.qbittorrent.org>
+- **Country list** with checkboxes and flags: choose the countries whose peers you want to ban.
+- **Ban** button: bans all connected peers from the checked countries at once.
+- **Auto Ban** (red/green): bans peers from the checked countries the moment they connect.
+- **Ban result box** in the lower left corner with a **"Today"** counter of bans.
+- **Total bans** window: banned IPs per country, with **Unban** for whole countries.
+- **Bans only apply to seeding torrents**; downloads can use every available peer.
+- **No confirmation** when banning peers from the Peers tab.
+- **Select All** toolbar button.
+- **Lime green arrows** for torrents that are uploading right now, and a **Progress bar
+  showing the peers' progress** while seeding (sortable).
+- **Country flags** (with country names on hover) after IP addresses in the Execution Log
+  and Blocked IPs tabs.
 
-Check out our wiki at:
-<https://wiki.qbittorrent.org>
+See the [user guide](docs/mankkas-edition/USER_GUIDE.md) for how everything works, and
+[LOCAL_CHANGES.md](LOCAL_CHANGES.md) for every change in detail.
 
-Use the forum for troubleshooting before reporting bugs:
-<https://forum.qbittorrent.org>
+## Download and install (Windows 10/11, 64-bit)
 
-Please report any bug (or feature request) to:
-<https://bugs.qbittorrent.org>
+1. Download the newest `qBittorrent-Mankkas-Edition-vX.Y.Z-win64.zip` from the
+   **Releases** page of this repository.
+2. Unzip it to a folder of your choice, e.g. `C:\Programs\qBittorrent Mankka's Edition`.
+3. Start `qbittorrent.exe` from that folder. No installation is needed.
 
-Official IRC channel:
-[#qbittorrent on irc.libera.chat](ircs://irc.libera.chat:6697/qbittorrent)
+Good to know:
 
------------------------------------------------------
+- The program isn't digitally signed, so **Windows SmartScreen may warn you** the first
+  time ("Windows protected your PC"). Click **More info → Run anyway** if you trust it.
+- It uses the **same settings and torrent list as the official qBittorrent**
+  (`%APPDATA%\qBittorrent` and `%LOCALAPPDATA%\qBittorrent`). Back them up before trying
+  it. It is based on a newer development version of qBittorrent, so an older official
+  version may not read everything back correctly afterwards.
+- Only one qBittorrent can run at a time. If the official qBittorrent is already
+  running, close it completely (tray icon → Exit) before starting this edition — the
+  window title shows which one is running.
 
-sledgehammer999 \<<sledgehammer999@qbittorrent.org>\>
+## Things to know
+
+- To trackers and peers the program identifies itself as qBittorrent 5.4.0. **Some
+  private trackers don't allow modified clients** — check your trackers' rules first.
+- It is based on qBittorrent **v5.4.0alpha1**, a development version of qBittorrent, not
+  a finished release.
+- Country detection uses the free IP to Country Lite database by
+  [DB-IP](https://db-ip.com/) (CC BY 4.0).
+- Much of this edition was written with the help of Claude, an AI assistant, and
+  reviewed and tested by me.
+- Provided as is, without warranty.
+
+## Feedback, ideas and problems
+
+Use the **Issues** tab of this repository — ideas are very welcome! See
+[SUPPORT.md](.github/SUPPORT.md) and [CONTRIBUTING.md](CONTRIBUTING.md).
+
+**Please don't report anything about this edition to the official qBittorrent project.**
+They don't support modified versions.
+
+## Building from source
+
+See [BUILDING.md](docs/mankkas-edition/BUILDING.md).
+
+## Licence
+
+Like qBittorrent, this edition is free software under the GNU General Public License:
+the source code is GPLv2 or later, the compiled program GPLv3 or later, with an
+exception for linking OpenSSL. See [COPYING](COPYING). qBittorrent is © its contributors
+(see [AUTHORS](AUTHORS)); the modifications are © 2026 Mankka. The licences of the
+libraries in the Windows download are in its `licenses` folder.
+
+The original qBittorrent README is kept in [README.qBittorrent.md](README.qBittorrent.md).
