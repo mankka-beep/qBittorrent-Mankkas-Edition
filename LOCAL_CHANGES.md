@@ -21,6 +21,19 @@ To get the official program back completely: `git switch master`, then rebuild.
 
 ## Changes (newest first)
 
+### 15. Ban box in the lower left corner, flags in the Blocked IPs tab — commit `690d84d70` (2026-10-18)
+
+- The 5-second result box after "Ban" / "Auto Ban" now appears in the lower left
+  corner of the screen (above the taskbar) instead of the middle. The "Total bans"
+  window is unchanged.
+- In Execution Log → Blocked IPs, each row shows the IP's country flag right after
+  the IP address, sized to the row height. The country comes from the same GeoIP
+  database as the Peers tab, so flags only appear while "Resolve peer countries" is on.
+  Copying rows (Ctrl+C) still copies plain text.
+- Changed: `src/gui/mainwindow.cpp/.h`, `src/gui/log/logmodel.cpp/.h`,
+  `src/gui/log/loglistview.cpp`
+- Undo with `git revert 690d84d70`.
+
 ### 14. "Select All" toolbar button — commit `7d1cab5af` (2026-10-17)
 
 A toolbar button left of the country dropdown, in the same style and size as the other
