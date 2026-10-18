@@ -247,11 +247,22 @@ int TransferListSortModel::compare(const QModelIndex &left, const QModelIndex &r
         return customCompare(leftValue.toLongLong(), rightValue.toLongLong());
 
     case TransferListModel::TR_AVAILABILITY:
-    case TransferListModel::TR_PROGRESS:
     case TransferListModel::TR_RATIO:
     case TransferListModel::TR_RATIO_LIMIT:
     case TransferListModel::TR_POPULARITY:
         return customCompare(leftValue.toReal(), rightValue.toReal());
+
+    case TransferListModel::TR_PROGRESS:
+        {
+            // Sort by the progress the bar shows: for a seed that is uploading, the highest
+            // progress of the peers it is uploading to; otherwise the torrent's own progress
+            const auto shownProgress = [](const QModelIndex &index, const QVariant &ownProgress)
+            {
+                const QVariant uploadingPeerProgress = index.data(TransferListModel::UploadingPeerProgressRole);
+                return (uploadingPeerProgress.isValid() ? uploadingPeerProgress : ownProgress).toReal();
+            };
+            return customCompare(shownProgress(left, leftValue), shownProgress(right, rightValue));
+        }
 
     case TransferListModel::TR_STATUS:
         return threeWayCompare(leftValue.toInt(), rightValue.toInt());
