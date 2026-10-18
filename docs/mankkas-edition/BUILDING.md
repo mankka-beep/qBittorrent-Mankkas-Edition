@@ -29,7 +29,7 @@ C:\vcpkg\bootstrap-vcpkg.bat -disableMetrics
 # Qt 6.10.3 for MSVC 2022, 64-bit (via aqtinstall)
 python -m venv C:\qbt-deps\aqt-venv
 C:\qbt-deps\aqt-venv\Scripts\python.exe -m pip install aqtinstall
-C:\qbt-deps\aqt-venv\Scripts\aqt.exe install-qt windows desktop 6.10.3 win64_msvc2022_64 --archives qtbase qtsvg qttools -m qtimageformats -O C:\Qt
+C:\qbt-deps\aqt-venv\Scripts\aqt.exe install-qt windows desktop 6.10.3 win64_msvc2022_64 --archives qtbase qtsvg qttools qttranslations -m qtimageformats -O C:\Qt
 ```
 
 Boost 1.91 and libtorrent 2.0.15 are downloaded automatically by the build script.
@@ -70,5 +70,7 @@ powershell -ExecutionPolicy Bypass -File dist\mankkas-edition\package-release.ps
 ```
 
 This creates `release\qBittorrent-Mankkas-Edition-vX.Y.Z-win64.zip` with the program, the
-Qt and Visual C++ runtime DLLs, the licences, the README, the user guide and the change
-log. The version number is taken from `QBT_MOD_VERSION` in `src\base\version.h.in`.
+Qt and Visual C++ runtime DLLs, Qt's translations, the licences, the README, the user guide
+and the change log. The version number is taken from `QBT_MOD_VERSION` in
+`src\base\version.h.in`. If Qt isn't in `C:\Qt\6.10.3\msvc2022_64`, add
+`-QtDir <folder>`.

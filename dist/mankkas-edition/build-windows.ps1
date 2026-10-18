@@ -115,4 +115,9 @@ if (-not $SkipTests) {
 # 5. Make build\qbittorrent.exe runnable in place: Qt DLLs + plugins next to it
 & "$QtDir\bin\windeployqt.exe" --no-translations --no-compiler-runtime --no-system-d3d-compiler --no-opengl-sw --plugindir "$build\plugins" "$build\qbittorrent.exe"; Check
 Copy-Item "$src\dist\windows\qt.conf" $build -Force
+# Qt's own translations (if installed), so Qt's buttons and dialogs follow the program's language
+if (Test-Path "$QtDir\translations") {
+    New-Item -ItemType Directory -Force "$build\translations" | Out-Null
+    Copy-Item "$QtDir\translations\qtbase_*.qm" "$build\translations" -Force
+}
 Write-Host "`nBuilt: $build\qbittorrent.exe" -ForegroundColor Green

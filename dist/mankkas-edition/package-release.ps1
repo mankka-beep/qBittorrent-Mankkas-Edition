@@ -7,7 +7,9 @@
 # runtime DLLs (so it also runs where the Visual C++ Redistributable isn't installed), the
 # licences, the README, the user guide and the change log.
 param(
-    [string]$OutputDir
+    [string]$OutputDir,
+    # Qt folder used for the build; its translations\qtbase_*.qm are added to the zip
+    [string]$QtDir = 'C:\Qt\6.10.3\msvc2022_64'
 )
 $ErrorActionPreference = 'Stop'
 
@@ -50,6 +52,13 @@ foreach ($plugin in $plugins) {
     if (-not $files) { throw "Qt plugin not found: $build\plugins\$plugin" }
     $files | Copy-Item -Destination $targetFolder
 }
+
+# Qt's own translations (buttons and standard dialogs in the user's language), loaded from
+# the "translations" folder named in qt.conf
+$qtTranslations = Get-ChildItem "$QtDir\translations" -Filter 'qtbase_*.qm' -ErrorAction SilentlyContinue
+if (-not $qtTranslations) { throw "Qt translations not found in $QtDir\translations (install the qttranslations archive, see BUILDING.md)" }
+New-Item -ItemType Directory -Force "$stage\translations" | Out-Null
+$qtTranslations | Copy-Item -Destination "$stage\translations"
 
 # Microsoft Visual C++ runtime DLLs (redistributable)
 $vs = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
