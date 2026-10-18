@@ -96,8 +96,10 @@ void Preferences::freeInstance()
 // General options
 QString Preferences::getLocale() const
 {
+    // Mankka's Edition: English until the user chooses a language (Options → Behavior →
+    // Language), instead of following the language of Windows
     const auto localeName = value<QString>(u"Preferences/General/Locale"_s);
-    return (localeName.isEmpty() ? QLocale::system().name() : localeName);
+    return (localeName.isEmpty() ? u"en"_s : localeName);
 }
 
 void Preferences::setLocale(const QString &locale)
