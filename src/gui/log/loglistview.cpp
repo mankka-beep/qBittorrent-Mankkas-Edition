@@ -30,6 +30,9 @@
 #include "loglistview.h"
 
 #include <QtSystemDetection>
+
+#include <algorithm>
+
 #include <QApplication>
 #include <QClipboard>
 #include <QFontMetrics>
@@ -39,6 +42,7 @@
 #include <QStyledItemDelegate>
 
 #include "base/global.h"
+#include "gui/uithememanager.h"
 #include "logmodel.h"
 
 #ifdef Q_OS_WIN
@@ -48,6 +52,8 @@
 namespace
 {
     const QString SEPARATOR = u" - "_s;
+    // Space around the country flag shown in the peer log
+    const int FLAG_MARGIN = 2;
 
     int horizontalAdvance(const QFontMetrics &fontMetrics, const QString &text)
     {
@@ -113,8 +119,30 @@ namespace
             const int messageCoordinateX = separatorCoordinateX + horizontalAdvance(fontMetrics, SEPARATOR);
             const QString message = index.data(BaseLogModel::MessageRole).toString();
             palette.setColor(QPalette::Active, QPalette::WindowText, index.data(BaseLogModel::MessageForegroundRole).value<QColor>());
-            style->drawItemText(painter, textRect.adjusted(messageCoordinateX, 0, 0, 0), option.displayAlignment, palette
-                                , isEnabled, message, textRole);
+
+            // Peer log: the country flag of the IP address is shown right after the address
+            const QString ip = index.data(BaseLogModel::IPRole).toString();
+            const QString countryCode = index.data(BaseLogModel::CountryCodeRole).toString();
+            const qsizetype ipPosition = (ip.isEmpty() || countryCode.isEmpty()) ? -1 : message.indexOf(ip);
+            if (ipPosition < 0)
+            {
+                style->drawItemText(painter, textRect.adjusted(messageCoordinateX, 0, 0, 0), option.displayAlignment, palette
+                                    , isEnabled, message, textRole);
+            }
+            else
+            {
+                const QString beforeFlag = message.left(ipPosition + ip.size());
+                const QString afterFlag = message.mid(ipPosition + ip.size());
+                style->drawItemText(painter, textRect.adjusted(messageCoordinateX, 0, 0, 0), option.displayAlignment, palette
+                                    , isEnabled, beforeFlag, textRole);
+
+                const QRect flagRect = flagRectAt((textRect.left() + messageCoordinateX + horizontalAdvance(fontMetrics, beforeFlag)), option.rect);
+                UIThemeManager::instance()->getFlagIcon(countryCode).paint(painter, flagRect);
+
+                const int afterFlagCoordinateX = (flagRect.right() + 1 + FLAG_MARGIN) - textRect.left();
+                style->drawItemText(painter, textRect.adjusted(afterFlagCoordinateX, 0, 0, 0), option.displayAlignment, palette
+                                    , isEnabled, afterFlag, textRole);
+            }
 
             painter->restore();
         }
@@ -122,10 +150,20 @@ namespace
         QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const override
         {
             const QSize minimumFontPadding(4, 4);
-            const QSize fontSize = option.fontMetrics.size(0, logText(index)) + minimumFontPadding;
+            QSize fontSize = option.fontMetrics.size(0, logText(index)) + minimumFontPadding;
+            if (!index.data(BaseLogModel::CountryCodeRole).toString().isEmpty())
+                fontSize.rwidth() += flagRectAt(0, {0, 0, 0, fontSize.height()}).width() + (2 * FLAG_MARGIN);
             const QSize defaultSize = QStyledItemDelegate::sizeHint(option, index);
             const QSize margins = (defaultSize - fontSize).expandedTo({0, 0});
             return fontSize + margins;
+        }
+
+        // A flag that fills the height of the row (minus a small margin), with the 4:3 shape of the flag images
+        static QRect flagRectAt(const int textEndX, const QRect &rowRect)
+        {
+            const int height = std::max((rowRect.height() - (2 * FLAG_MARGIN)), 1);
+            const int width = ((height * 4) + 2) / 3;
+            return {(textEndX + FLAG_MARGIN), (rowRect.top() + ((rowRect.height() - height) / 2)), width, height};
         }
 
 #ifdef Q_OS_WIN

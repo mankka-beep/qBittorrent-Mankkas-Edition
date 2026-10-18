@@ -49,7 +49,9 @@ public:
         MessageRole,
         TimeForegroundRole,
         MessageForegroundRole,
-        TypeRole
+        TypeRole,
+        IPRole,          // IP address the message is about (peer log only)
+        CountryCodeRole  // country of that IP address, if known
     };
 
     explicit BaseLogModel(QObject *parent = nullptr);
@@ -63,16 +65,21 @@ protected:
     class Message
     {
     public:
-        Message(const QString &time, const QString &message, Log::MsgType type);
+        Message(const QString &time, const QString &message, Log::MsgType type
+                , const QString &ip = {}, const QString &countryCode = {});
 
         QString time() const;
         QString message() const;
         Log::MsgType type() const;
+        QString ip() const;
+        QString countryCode() const;
 
     private:
         QString m_time;
         QString m_message;
         Log::MsgType m_type;
+        QString m_ip;
+        QString m_countryCode;
     };
 
     void addNewMessage(const Message &message);

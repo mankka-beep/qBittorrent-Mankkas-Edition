@@ -209,7 +209,7 @@ private:
     void applyTransferListFilter();
     void populateCountryComboBox();
     void banPeersFromCheckedCountries();
-    void showCenteredNotification(const QString &message, const QString &footer = {});
+    void showBanNotification(const QString &message, const QString &footer = {});
     void refreshWindowTitle();
     void refreshTrayIconTooltip();
 

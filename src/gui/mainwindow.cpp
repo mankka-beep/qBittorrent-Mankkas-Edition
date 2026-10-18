@@ -2105,11 +2105,11 @@ void MainWindow::banPeersFromCheckedCountries()
         {
             message = tr("%1 peer(s) from %2 banned").arg(ipsToBan.size()).arg(countriesText);
         }
-        showCenteredNotification(message, tr("Today: %1").arg(BanCounter::bannedToday()));
+        showBanNotification(message, tr("Today: %1").arg(BanCounter::bannedToday()));
     });
 }
 
-void MainWindow::showCenteredNotification(const QString &message, const QString &footer)
+void MainWindow::showBanNotification(const QString &message, const QString &footer)
 {
     auto *notification = new QFrame(this, (Qt::ToolTip | Qt::FramelessWindowHint));
     notification->setAttribute(Qt::WA_DeleteOnClose);
@@ -2145,9 +2145,12 @@ void MainWindow::showCenteredNotification(const QString &message, const QString 
         layout->addWidget(footerLabel);
     }
 
+    // Shown in the lower left corner of the screen (above the taskbar)
     notification->adjustSize();
+    const int screenMargin = 16;
     const QRect screenArea = screen()->availableGeometry();
-    notification->move(screenArea.center() - notification->rect().center());
+    notification->move((screenArea.left() + screenMargin)
+            , (screenArea.bottom() + 1 - screenMargin - notification->height()));
     notification->show();
 
     QTimer::singleShot(5s, notification, &QWidget::close);

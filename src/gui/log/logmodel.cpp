@@ -33,16 +33,21 @@
 #include <QApplication>
 #include <QDateTime>
 #include <QColor>
+#include <QHostAddress>
 
 #include "base/global.h"
+#include "base/net/geoipmanager.h"
 #include "gui/uithememanager.h"
 
 const int MAX_VISIBLE_MESSAGES = 20000;
 
-BaseLogModel::Message::Message(const QString &time, const QString &message, const Log::MsgType type)
+BaseLogModel::Message::Message(const QString &time, const QString &message, const Log::MsgType type
+        , const QString &ip, const QString &countryCode)
     : m_time {time}
     , m_message {message}
     , m_type {type}
+    , m_ip {ip}
+    , m_countryCode {countryCode}
 {
 }
 
@@ -59,6 +64,16 @@ QString BaseLogModel::Message::message() const
 Log::MsgType BaseLogModel::Message::type() const
 {
     return m_type;
+}
+
+QString BaseLogModel::Message::ip() const
+{
+    return m_ip;
+}
+
+QString BaseLogModel::Message::countryCode() const
+{
+    return m_countryCode;
 }
 
 BaseLogModel::BaseLogModel(QObject *parent)
@@ -101,6 +116,10 @@ QVariant BaseLogModel::data(const QModelIndex &index, const int role) const
         return messageForeground(message);
     case TypeRole:
         return message.type();
+    case IPRole:
+        return message.ip();
+    case CountryCodeRole:
+        return message.countryCode();
     default:
         return {};
     }
@@ -199,7 +218,10 @@ void LogPeerModel::handleNewMessage(const Log::Peer &peer)
             ? tr("%1 was blocked. Reason: %2.", "0.0.0.0 was blocked. Reason: reason for blocking.").arg(peer.ip, peer.reason)
             : tr("%1 was banned", "0.0.0.0 was banned").arg(peer.ip);
 
-    addNewMessage({time, message, Log::NORMAL});
+    // The country is shown as a flag after the IP address
+    const QString countryCode = Net::GeoIPManager::instance()->lookup(QHostAddress(peer.ip));
+
+    addNewMessage({time, message, Log::NORMAL, peer.ip, countryCode});
 }
 
 QColor LogPeerModel::messageForeground([[maybe_unused]] const Message &message) const
