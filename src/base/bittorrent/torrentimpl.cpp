@@ -1286,6 +1286,22 @@ TorrentState TorrentImpl::state() const
     return m_state;
 }
 
+void TorrentImpl::updateIPFilterUsage()
+{
+    // Banned IP addresses (kept in the session's IP filter) only apply to finished, seeding
+    // torrents. A torrent that is still downloading ignores the IP filter, so banned peers
+    // can connect to it. The flag follows the torrent when it finishes or downloads again.
+    const bool shouldApplyIPFilter = isFinished();
+    const bool appliesIPFilter = static_cast<bool>(m_nativeStatus.flags & lt::torrent_flags::apply_ip_filter);
+    if (shouldApplyIPFilter == appliesIPFilter)
+        return;
+
+    if (shouldApplyIPFilter)
+        m_nativeHandle.set_flags(lt::torrent_flags::apply_ip_filter);
+    else
+        m_nativeHandle.unset_flags(lt::torrent_flags::apply_ip_filter);
+}
+
 void TorrentImpl::updateState()
 {
     if (m_nativeStatus.state == lt::torrent_status::checking_resume_data)
@@ -2696,6 +2712,7 @@ void TorrentImpl::updateStatus(const lt::torrent_status &nativeStatus)
         m_lastSeenComplete = QDateTime::fromSecsSinceEpoch(m_nativeStatus.last_seen_complete);
 
     updateState();
+    updateIPFilterUsage();
 
     m_payloadRateMonitor.addSample({nativeStatus.download_payload_rate
                               , nativeStatus.upload_payload_rate});
