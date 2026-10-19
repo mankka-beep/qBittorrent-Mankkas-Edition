@@ -23,6 +23,7 @@ change the version.
 
 | Version | Changes | Based on qBittorrent |
 |---|---|---|
+| v1.2.2 | 29 | v5.4.0alpha1 |
 | v1.2.1 | 28 | v5.4.0alpha1 |
 | v1.2.0 | 27 | v5.4.0alpha1 |
 | v1.1.2 | 26 | v5.4.0alpha1 |
@@ -47,6 +48,15 @@ To see exactly what a change did: `git show <commit>`.
 To get the official program back completely: `git switch master`, then rebuild.
 
 ## Changes (newest first)
+
+### 29. Ban box higher above the taskbar, version v1.2.2 — commit `ee5880569` (2026-10-19)
+
+The box shown after Ban / Auto Ban sits 64 pixels above the bottom of the usable screen area
+(was 16), so it stays clear of the taskbar. It is still 16 pixels from the right edge.
+
+- Changed: `src/gui/mainwindow.cpp`, `src/base/version.h.in` (v1.2.2),
+  `docs/mankkas-edition/USER_GUIDE.md`
+- Undo with `git revert ee5880569`.
 
 ### 28. Ban box never takes the focus, lower right corner, version v1.2.1 — commit `40691e0fb` (2026-10-19)
 
