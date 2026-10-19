@@ -23,6 +23,7 @@ change the version.
 
 | Version | Changes | Based on qBittorrent |
 |---|---|---|
+| v1.6.2 | 35 | v5.4.0alpha1 |
 | v1.6.1 | 34 | v5.4.0alpha1 |
 | v1.6.0 | 33 | v5.4.0alpha1 |
 | v1.5.0 | 32 | v5.4.0alpha1 |
@@ -53,6 +54,19 @@ To see exactly what a change did: `git show <commit>`.
 To get the official program back completely: `git switch master`, then rebuild.
 
 ## Changes (newest first)
+
+### 35. Mute checkbox no longer overlaps "Auto Ban", version v1.6.2 — commit `e6a371c14` (2026-10-19)
+
+Fix for change 34: the space reserved for the mute checkbox was measured before its speaker
+icon was set, so it was too small and the checkbox and speaker were drawn over the text.
+The width is now measured after the icon is set, and the checkbox is sized to its actual
+parts (tick box, spacing, 16 px icon) instead of its size hint, which included unused space.
+Checked in the running program: "Auto Ban", checkbox and speaker side by side, button no
+wider than needed.
+
+- Changed: `src/gui/mainwindow.cpp`, `src/base/version.h.in` (v1.6.2),
+  `docs/mankkas-edition/USER_GUIDE.md` (version only)
+- Undo with `git revert e6a371c14`.
 
 ### 34. Auto Ban button only as wide as needed, version v1.6.1 — commit `c7d689a4e` (2026-10-19)
 
