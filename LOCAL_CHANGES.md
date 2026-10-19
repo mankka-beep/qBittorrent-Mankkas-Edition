@@ -23,6 +23,7 @@ change the version.
 
 | Version | Changes | Based on qBittorrent |
 |---|---|---|
+| v1.6.3 | 36 | v5.4.0alpha1 |
 | v1.6.2 | 35 | v5.4.0alpha1 |
 | v1.6.1 | 34 | v5.4.0alpha1 |
 | v1.6.0 | 33 | v5.4.0alpha1 |
@@ -54,6 +55,18 @@ To see exactly what a change did: `git show <commit>`.
 To get the official program back completely: `git switch master`, then rebuild.
 
 ## Changes (newest first)
+
+### 36. White tick box for the mute checkbox, "Total Bans" button text, version v1.6.3 — commit `75475c59c` (2026-10-19)
+
+The mute checkbox inside the Auto Ban button now has a white tick box with a dark border
+and a dark tick (new icon `checkbox-checkmark.svg`), so it shows clearly on the red and
+green button. The button left of "Filter torrents..." now reads "Total Bans" (the window it
+opens is still titled "Total bans"). Checked in the running program.
+
+- Changed: `src/gui/mainwindow.cpp`, `src/icons/checkbox-checkmark.svg` (new),
+  `src/icons/icons.qrc`, `src/base/version.h.in` (v1.6.3),
+  `docs/mankkas-edition/USER_GUIDE.md` (version and button name)
+- Undo with `git revert 75475c59c`.
 
 ### 35. Mute checkbox no longer overlaps "Auto Ban", version v1.6.2 — commit `e6a371c14` (2026-10-19)
 
