@@ -23,6 +23,7 @@ change the version.
 
 | Version | Changes | Based on qBittorrent |
 |---|---|---|
+| v1.4.0 | 31 | v5.4.0alpha1 |
 | v1.3.0 | 30 | v5.4.0alpha1 |
 | v1.2.2 | 29 | v5.4.0alpha1 |
 | v1.2.1 | 28 | v5.4.0alpha1 |
@@ -49,6 +50,22 @@ To see exactly what a change did: `git show <commit>`.
 To get the official program back completely: `git switch master`, then rebuild.
 
 ## Changes (newest first)
+
+### 31. "Blocked today by IP filter" in the Total bans window, version v1.4.0 — commit `f476e07b6` (2026-10-19)
+
+Below "Total:" the Total bans window shows "Blocked today by IP filter: nnnn", the number of
+connections the IP filter (the banned IP list) refused today. The main window counts the
+peer log entries that were blocked with the reason "IP filter" (`Logger::newLogPeer`, plus
+the ones logged before the window was created). The count is stored like the "Today:" ban
+counter, so it survives restarts and starts from 0 on a new date. The window refreshes it
+every 2 seconds.
+
+- Changed: `src/gui/bancounter.cpp/.h`, `src/gui/mainwindow.cpp`,
+  `src/gui/totalbansdialog.cpp/.h`, `src/base/version.h.in` (v1.4.0),
+  `docs/mankkas-edition/USER_GUIDE.md`
+- Settings in `qBittorrent.ini` under `[GUI]`: `BanCountries\BlockedTodayDate`,
+  `BanCountries\BlockedTodayCount`. Safe to delete after undoing.
+- Undo with `git revert f476e07b6`.
 
 ### 30. Active upload peers in the status bar, version v1.3.0 — commit `8485c17b7` (2026-10-19)
 
