@@ -23,6 +23,7 @@ change the version.
 
 | Version | Changes | Based on qBittorrent |
 |---|---|---|
+| v1.3.0 | 30 | v5.4.0alpha1 |
 | v1.2.2 | 29 | v5.4.0alpha1 |
 | v1.2.1 | 28 | v5.4.0alpha1 |
 | v1.2.0 | 27 | v5.4.0alpha1 |
@@ -48,6 +49,18 @@ To see exactly what a change did: `git show <commit>`.
 To get the official program back completely: `git switch master`, then rebuild.
 
 ## Changes (newest first)
+
+### 30. Active upload peers in the status bar, version v1.3.0 — commit `8485c17b7` (2026-10-19)
+
+The upload speed field at the bottom of the window ends with "(nn Peers)": the number of
+peers being uploaded to right now, over all torrents. On each status bar refresh,
+`StatusBar::updateActiveUploadPeers()` fetches the peer lists of the torrents that upload
+at that moment and counts the peers with an upload speed above 0. The field shows the
+latest finished count.
+
+- Changed: `src/gui/statusbar.cpp/.h`, `src/base/version.h.in` (v1.3.0),
+  `docs/mankkas-edition/USER_GUIDE.md`
+- Undo with `git revert 8485c17b7`.
 
 ### 29. Ban box higher above the taskbar, version v1.2.2 — commit `ee5880569` (2026-10-19)
 
