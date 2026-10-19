@@ -23,6 +23,7 @@ change the version.
 
 | Version | Changes | Based on qBittorrent |
 |---|---|---|
+| v1.6.0 | 33 | v5.4.0alpha1 |
 | v1.5.0 | 32 | v5.4.0alpha1 |
 | v1.4.0 | 31 | v5.4.0alpha1 |
 | v1.3.0 | 30 | v5.4.0alpha1 |
@@ -51,6 +52,23 @@ To see exactly what a change did: `git show <commit>`.
 To get the official program back completely: `git switch master`, then rebuild.
 
 ## Changes (newest first)
+
+### 33. Mute checkbox in the Auto Ban button, version v1.6.0 — commit `f0debdcb0` (2026-10-19)
+
+A checkbox with a speaker icon sits inside the Auto Ban button, to the right of its text.
+Unchecked (speaker with sound waves): Auto Ban shows the ban box. Checked (speaker with a
+cross): Auto Ban shows no ban box, both for real-time bans and for the check when it is
+turned on. Banning, logging and counting are unchanged, and the Ban button always shows
+its box. Clicking the checkbox only changes the mute; the rest of the button still toggles
+Auto Ban. The setting is remembered.
+
+- New files: `src/icons/speaker.svg`, `src/icons/speaker-muted.svg` (white, for the red
+  and green button)
+- Changed: `src/gui/mainwindow.cpp/.h` (`banPeersFromCheckedCountries(bool byAutoBan)`,
+  `isAutoBanMuted()`), `src/icons/icons.qrc`, `src/gui/uithemecommon.h`,
+  `src/base/version.h.in` (v1.6.0), `docs/mankkas-edition/USER_GUIDE.md`
+- Setting in `qBittorrent.ini` under `[GUI]`: `BanCountries\AutoBanMuted`.
+- Undo with `git revert f0debdcb0`.
 
 ### 32. "From Me" column in the Peers tab, version v1.5.0 — commit `154e8415e` (2026-10-19)
 
