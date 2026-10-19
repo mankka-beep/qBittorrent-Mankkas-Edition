@@ -638,6 +638,8 @@ MainWindow::MainWindow(IGUIApplication *app, const WindowState initialState, con
 
 MainWindow::~MainWindow()
 {
+    // The ban box has no parent window, so it isn't deleted together with this window
+    delete m_banNotification;
     delete m_ui;
 }
 
@@ -2136,7 +2138,10 @@ void MainWindow::showBanNotification(const QString &message, const QString &foot
     if (m_banNotification)
         m_banNotification->close();
 
-    auto *notification = new QFrame(this, (Qt::ToolTip | Qt::FramelessWindowHint));
+    // The box must never take the focus or bring any window (including qBittorrent's) to the
+    // front: it has no owner window, can't be activated, and mouse clicks go through it
+    auto *notification = new QFrame(nullptr, (Qt::ToolTip | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint
+            | Qt::WindowDoesNotAcceptFocus | Qt::WindowTransparentForInput));
     m_banNotification = notification;
     notification->setAttribute(Qt::WA_DeleteOnClose);
     notification->setAttribute(Qt::WA_ShowWithoutActivating);
@@ -2171,11 +2176,13 @@ void MainWindow::showBanNotification(const QString &message, const QString &foot
         layout->addWidget(footerLabel);
     }
 
-    // Shown in the lower left corner of the screen (above the taskbar)
+    // Shown in the lower right corner of the screen (above the taskbar): the screen qBittorrent's
+    // window is on, or the main screen while qBittorrent is hidden in the tray
     notification->adjustSize();
     const int screenMargin = 16;
-    const QRect screenArea = screen()->availableGeometry();
-    notification->move((screenArea.left() + screenMargin)
+    const QScreen *notificationScreen = (isVisible() && !isMinimized()) ? screen() : QGuiApplication::primaryScreen();
+    const QRect screenArea = notificationScreen->availableGeometry();
+    notification->move((screenArea.right() + 1 - screenMargin - notification->width())
             , (screenArea.bottom() + 1 - screenMargin - notification->height()));
     notification->show();
 
