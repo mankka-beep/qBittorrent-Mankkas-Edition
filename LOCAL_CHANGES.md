@@ -23,6 +23,7 @@ change the version.
 
 | Version | Changes | Based on qBittorrent |
 |---|---|---|
+| v1.5.0 | 32 | v5.4.0alpha1 |
 | v1.4.0 | 31 | v5.4.0alpha1 |
 | v1.3.0 | 30 | v5.4.0alpha1 |
 | v1.2.2 | 29 | v5.4.0alpha1 |
@@ -50,6 +51,23 @@ To see exactly what a change did: `git show <commit>`.
 To get the official program back completely: `git switch master`, then rebuild.
 
 ## Changes (newest first)
+
+### 32. "From Me" column in the Peers tab, version v1.5.0 — commit `154e8415e` (2026-10-19)
+
+A new Peers tab column "From Me": what the peer has downloaded from us (the same counter
+as "Uploaded", for the current connection) as a percentage of the torrent's total size.
+It sorts, hides, moves and resizes like the other columns and follows "hide zero values".
+
+The column (`PeerListColumns::FROM_ME`) is added **after** the internal `IP_HIDDEN` column,
+so every existing column keeps its number and saved Peers layouts restore unchanged; the
+new column appears at the far right. The loops that ended at `IP_HIDDEN` (at least one
+visible column, sizing columns with width 0, the column menu) now cover all columns
+except `IP_HIDDEN`.
+
+- Changed: `src/gui/properties/peerlistwidget.cpp/.h`, `src/base/version.h.in` (v1.5.0),
+  `docs/mankkas-edition/USER_GUIDE.md`
+- Undo with `git revert 154e8415e`. Saved layouts then have one column too many, which Qt
+  may handle by resetting the Peers layout once.
 
 ### 31. "Blocked today by IP filter" in the Total bans window, version v1.4.0 — commit `f476e07b6` (2026-10-19)
 
