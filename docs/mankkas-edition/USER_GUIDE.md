@@ -1,6 +1,6 @@
 # qBittorrent Mankka's Edition — User Guide
 
-Version **v1.2.2**, based on qBittorrent v5.4.0alpha1.
+Version **v1.3.0**, based on qBittorrent v5.4.0alpha1.
 
 Mankka's Edition is an unofficial, modified version of qBittorrent for Windows. It adds
 tools for blocking peers by country, quicker banning, ban statistics, and a few visual
@@ -219,6 +219,15 @@ actually uploads.
 - **Sorting** by the Progress column uses the value the bar shows, so uploading seeds move
   in the list as their peers' progress changes.
 
+**Status bar (bottom of the window):** the upload speed field ends with the number of peers
+you are uploading to right now, over all torrents (seeding and downloading):
+
+```
+U: 512 KiB/s (3,1 GiB) (12 Peers)
+```
+
+It is updated each time the status bar refreshes.
+
 ---
 
 ## 11. Flags in the Execution Log
@@ -236,7 +245,7 @@ Open **View → Log** (the Execution Log at the bottom of the window):
 
 ## 12. Name, version and About
 
-- The window title shows **"qBittorrent v1.2.2 Mankka's Edition"**.
+- The window title shows **"qBittorrent v1.3.0 Mankka's Edition"**.
 - **Help → About** shows the edition name, the qBittorrent version it's based on, and
   "Modifications © 2026 Mankka". Its links lead to the qBittorrent home page, the
   edition's own GitHub page, and the edition's bug tracker (Issues).

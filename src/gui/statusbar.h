@@ -67,6 +67,7 @@ private:
     void updateExternalAddressesLabel();
     void updateExternalAddressesVisibility();
     void updateSpeedLabels();
+    void updateActiveUploadPeers();
 
     QPushButton *m_dlSpeedLbl = nullptr;
     QPushButton *m_upSpeedLbl = nullptr;
@@ -78,4 +79,8 @@ private:
     QWidget *m_DHTSeparator = nullptr;
     QPushButton *m_connecStatusLblIcon = nullptr;
     QPushButton *m_altSpeedsBtn = nullptr;
+
+    // Peers we are uploading to right now, over all torrents (shown as "(nn Peers)")
+    int m_activeUploadPeers = 0;
+    bool m_activeUploadPeersRequested = false;
 };

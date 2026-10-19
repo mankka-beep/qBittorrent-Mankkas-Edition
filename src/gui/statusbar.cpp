@@ -29,12 +29,16 @@
 #include "statusbar.h"
 
 #include <QFrame>
+#include <QFuture>
 #include <QLabel>
+#include <QList>
 #include <QPushButton>
 #include <QStyle>
 
+#include "base/bittorrent/peerinfo.h"
 #include "base/bittorrent/session.h"
 #include "base/bittorrent/sessionstatus.h"
+#include "base/bittorrent/torrent.h"
 #include "base/preferences.h"
 #include "base/utils/misc.h"
 #include "speedlimitdialog.h"
@@ -262,7 +266,53 @@ void StatusBar::updateSpeedLabels()
     if (upSpeedLimit > 0)
         upSpeedLbl += u" [" + Utils::Misc::friendlyUnit(upSpeedLimit, true) + u']';
     upSpeedLbl += u" (" + Utils::Misc::friendlyUnit(sessionStatus.totalPayloadUpload) + u')';
+    upSpeedLbl += u' ' + tr("(%1 Peers)", "Number of peers being uploaded to right now").arg(m_activeUploadPeers);
     m_upSpeedLbl->setText(upSpeedLbl);
+}
+
+void StatusBar::updateActiveUploadPeers()
+{
+    // Counted from the peer lists of the torrents that upload right now; the label shows the
+    // result of the latest finished count
+    if (m_activeUploadPeersRequested)
+        return;
+
+    QList<QFuture<QList<BitTorrent::PeerInfo>>> peerInfoFutures;
+    const QList<BitTorrent::Torrent *> torrents = BitTorrent::Session::instance()->torrents();
+    for (const BitTorrent::Torrent *torrent : torrents)
+    {
+        if (torrent->uploadPayloadRate() > 0)
+            peerInfoFutures.append(torrent->fetchPeerInfo());
+    }
+
+    if (peerInfoFutures.isEmpty())
+    {
+        m_activeUploadPeers = 0;
+        return;
+    }
+
+    m_activeUploadPeersRequested = true;
+    QtFuture::whenAll(peerInfoFutures.begin(), peerInfoFutures.end()).then(this
+        , [this](const QList<QFuture<QList<BitTorrent::PeerInfo>>> &finishedFutures)
+    {
+        int activeUploadPeers = 0;
+        for (const QFuture<QList<BitTorrent::PeerInfo>> &future : finishedFutures)
+        {
+            if (future.isCanceled())
+                continue;
+
+            const QList<BitTorrent::PeerInfo> peers = future.result();
+            for (const BitTorrent::PeerInfo &peer : peers)
+            {
+                if (peer.payloadUpSpeed() > 0)
+                    ++activeUploadPeers;
+            }
+        }
+
+        m_activeUploadPeers = activeUploadPeers;
+        m_activeUploadPeersRequested = false;
+        updateSpeedLabels();
+    });
 }
 
 void StatusBar::refresh()
@@ -270,6 +320,7 @@ void StatusBar::refresh()
     updateConnectionStatus();
     updateDHTNodesNumber();
     updateExternalAddressesLabel();
+    updateActiveUploadPeers();
     updateSpeedLabels();
 }
 
