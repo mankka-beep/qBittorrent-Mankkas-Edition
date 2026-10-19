@@ -340,6 +340,8 @@
         <file>set-location.svg</file>
         <file>slow.svg</file>
         <file>slow_off.svg</file>
+        <file>speaker-muted.svg</file>
+        <file>speaker.svg</file>
         <file>speedometer.svg</file>
         <file>splash.png</file>
         <file>stalledDL.svg</file>

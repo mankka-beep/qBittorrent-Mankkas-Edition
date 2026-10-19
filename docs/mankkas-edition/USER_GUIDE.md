@@ -1,6 +1,6 @@
 # qBittorrent Mankka's Edition — User Guide
 
-Version **v1.5.0**, based on qBittorrent v5.4.0alpha1.
+Version **v1.6.0**, based on qBittorrent v5.4.0alpha1.
 
 Mankka's Edition is an unofficial, modified version of qBittorrent for Windows. It adds
 tools for blocking peers by country, quicker banning, ban statistics, and a few visual
@@ -114,6 +114,19 @@ Good to know:
 - A peer from a checked country may be connected for a split second before Auto Ban cuts
   it off; after that it's on the banned list like any other ban.
 - If you uncheck a country, Auto Ban stops banning it straight away.
+
+**Muting Auto Ban:** inside the Auto Ban button, to the right of its text, there's a small
+checkbox with a speaker:
+
+| Checkbox | Speaker | What happens |
+|---|---|---|
+| Unchecked | Speaker with sound waves | Auto Ban shows the ban box as usual |
+| Checked | Speaker with a cross | Auto Ban shows **no** ban box |
+
+Clicking the checkbox or the speaker only changes the mute; clicking anywhere else on the
+button turns Auto Ban on or off. While muted, Auto Ban still bans, logs and counts as
+normal ("Today" keeps counting), only the box is hidden. Pressing **Ban** yourself always
+shows its box. The mute setting is remembered when you restart.
 
 ---
 
@@ -259,7 +272,7 @@ Open **View → Log** (the Execution Log at the bottom of the window):
 
 ## 12. Name, version and About
 
-- The window title shows **"qBittorrent v1.5.0 Mankka's Edition"**.
+- The window title shows **"qBittorrent v1.6.0 Mankka's Edition"**.
 - **Help → About** shows the edition name, the qBittorrent version it's based on, and
   "Modifications © 2026 Mankka". Its links lead to the qBittorrent home page, the
   edition's own GitHub page, and the edition's bug tracker (Issues).
@@ -311,6 +324,7 @@ Besides qBittorrent's normal settings, the edition stores these in
 | `[GUI] BanCountries\Checked` | Your checked countries |
 | `[GUI] BanCountries\TodayDate`, `BanCountries\TodayCount` | The "Today" ban counter |
 | `[GUI] BanCountries\BlockedTodayDate`, `BanCountries\BlockedTodayCount` | "Blocked today by IP filter" |
+| `[GUI] BanCountries\AutoBanMuted` | Auto Ban's mute checkbox |
 | `[TotalBansDialog] Size` | Size of the Total bans window |
 
 The banned IPs themselves are stored in qBittorrent's normal setting (`[State] BannedIPs`).

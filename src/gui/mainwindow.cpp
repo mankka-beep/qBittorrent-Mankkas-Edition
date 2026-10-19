@@ -41,6 +41,7 @@
 #include <QApplication>
 #include <QClipboard>
 #include <QCloseEvent>
+#include <QCheckBox>
 #include <QComboBox>
 #include <QDate>
 #include <QDateTime>
@@ -167,6 +168,7 @@ MainWindow::MainWindow(IGUIApplication *app, const WindowState initialState, con
     , m_storeExecutionLogEnabled {EXECUTIONLOG_SETTINGS_KEY(u"Enabled"_s)}
     , m_storeDownloadTrackerFavicon {SETTINGS_KEY(u"DownloadTrackerFavicon"_s)}
     , m_storeBanCheckedCountries {SETTINGS_KEY(u"BanCountries/Checked"_s)}
+    , m_storeAutoBanMuted {SETTINGS_KEY(u"BanCountries/AutoBanMuted"_s)}
     , m_storeExecutionLogTypes {EXECUTIONLOG_SETTINGS_KEY(u"Types"_s), Log::MsgType::ALL}
 #ifdef Q_OS_MACOS
     , m_badger {std::make_unique<MacUtils::Badger>()}
@@ -318,7 +320,10 @@ MainWindow::MainWindow(IGUIApplication *app, const WindowState initialState, con
     m_banCountryButton = new QPushButton(tr("Ban"), this);
     m_banCountryButton->setToolTip(tr("Permanently ban all connected peers from the checked countries"));
     m_banCountryButton->setEnabled(!m_countryComboBox->checkedCountryCodes().isEmpty());
-    connect(m_banCountryButton, &QPushButton::clicked, this, &MainWindow::banPeersFromCheckedCountries);
+    connect(m_banCountryButton, &QPushButton::clicked, this, [this]
+    {
+        banPeersFromCheckedCountries(false);
+    });
     const QStringList initiallyCheckedCountryCodes = m_countryComboBox->checkedCountryCodes();
     m_autoBanCountryCodes = {initiallyCheckedCountryCodes.cbegin(), initiallyCheckedCountryCodes.cend()};
     connect(m_countryComboBox, &CountryComboBox::checkedCountriesChanged, this, [this]
@@ -336,11 +341,36 @@ MainWindow::MainWindow(IGUIApplication *app, const WindowState initialState, con
     m_autoBanButton = new QPushButton(tr("Auto Ban"), this);
     m_autoBanButton->setCheckable(true);
     m_autoBanButton->setToolTip(tr("Red: off. Green: bans peers from the checked countries as soon as they connect"));
+    // The right part of the button is kept free for the mute checkbox
     m_autoBanButton->setStyleSheet(u"QPushButton { background-color: #c62828; color: white; border: 1px solid #8e0000;"
-            " border-radius: 4px; padding: 3px 10px; }"
+            " border-radius: 4px; padding: 3px 50px 3px 10px; text-align: left; }"
             " QPushButton:hover { background-color: #d84343; }"
             " QPushButton:checked { background-color: #2e7d32; border-color: #1b5e20; }"
             " QPushButton:checked:hover { background-color: #43a047; }"_s);
+
+    // Mute checkbox inside the Auto Ban button: checked = no ban box for Auto Ban (speaker
+    // with a cross), unchecked = ban boxes are shown (speaker with sound waves). Clicking it
+    // only changes the mute; the rest of the button still turns Auto Ban on and off.
+    // Remembered across restarts.
+    m_autoBanMuteCheckBox = new QCheckBox(m_autoBanButton);
+    m_autoBanMuteCheckBox->setToolTip(tr("Mute Auto Ban: when checked, Auto Ban doesn't show the ban box"));
+    m_autoBanMuteCheckBox->setIconSize({16, 16});
+    m_autoBanMuteCheckBox->setChecked(m_storeAutoBanMuted.get(false));
+    const auto updateMuteIcon = [this]
+    {
+        m_autoBanMuteCheckBox->setIcon(UIThemeManager::instance()->getIcon(
+                (m_autoBanMuteCheckBox->isChecked() ? u"speaker-muted"_s : u"speaker"_s)));
+    };
+    updateMuteIcon();
+    connect(m_autoBanMuteCheckBox, &QCheckBox::toggled, this, [this, updateMuteIcon](const bool muted)
+    {
+        m_storeAutoBanMuted = muted;
+        updateMuteIcon();
+    });
+    auto *autoBanButtonLayout = new QHBoxLayout(m_autoBanButton);
+    autoBanButtonLayout->setContentsMargins(0, 0, 6, 0);
+    autoBanButtonLayout->addStretch();
+    autoBanButtonLayout->addWidget(m_autoBanMuteCheckBox);
     connect(BitTorrent::Session::instance(), &BitTorrent::Session::peerConnected, this, &MainWindow::autoBanConnectedPeer);
 
     // Count the connections the IP filter blocks today ("Blocked today by IP filter" in the
@@ -369,7 +399,7 @@ MainWindow::MainWindow(IGUIApplication *app, const WindowState initialState, con
         // New peer connections are only reported while Auto Ban is on
         BitTorrent::Session::instance()->setPeerConnectedNotificationEnabled(enabled);
         if (enabled)
-            banPeersFromCheckedCountries();
+            banPeersFromCheckedCountries(true);
     });
     m_ui->toolBar->insertWidget(spacerAction, m_autoBanButton);
 
@@ -2031,7 +2061,7 @@ void MainWindow::populateCountryComboBox()
     view->setMinimumWidth(view->sizeHintForColumn(0) + view->verticalScrollBar()->sizeHint().width());
 }
 
-void MainWindow::banPeersFromCheckedCountries()
+void MainWindow::banPeersFromCheckedCountries(const bool byAutoBan)
 {
     // A ban that is still collecting peers is not started again (Auto Ban runs every minute)
     if (m_banInProgress)
@@ -2051,7 +2081,7 @@ void MainWindow::banPeersFromCheckedCountries()
     m_banInProgress = true;
     m_banCountryButton->setEnabled(false);
     QtFuture::whenAll(peerInfoFutures.begin(), peerInfoFutures.end()).then(this
-        , [this, checkedCountryCodes, countryCodes, countryNames](const QList<QFuture<QList<BitTorrent::PeerInfo>>> &finishedFutures)
+        , [this, byAutoBan, checkedCountryCodes, countryCodes, countryNames](const QList<QFuture<QList<BitTorrent::PeerInfo>>> &finishedFutures)
     {
         m_banInProgress = false;
         m_banCountryButton->setEnabled(!m_countryComboBox->checkedCountryCodes().isEmpty());
@@ -2129,8 +2159,16 @@ void MainWindow::banPeersFromCheckedCountries()
         {
             message = tr("%1 peer(s) from %2 banned").arg(ipsToBan.size()).arg(countriesText);
         }
-        showBanNotification(message, tr("Today: %1").arg(BanCounter::bannedToday()));
+
+        // Auto Ban's box can be muted; the Ban button always shows it
+        if (!(byAutoBan && isAutoBanMuted()))
+            showBanNotification(message, tr("Today: %1").arg(BanCounter::bannedToday()));
     });
+}
+
+bool MainWindow::isAutoBanMuted() const
+{
+    return m_autoBanMuteCheckBox && m_autoBanMuteCheckBox->isChecked();
 }
 
 void MainWindow::autoBanConnectedPeer(const QString &ip)
@@ -2152,8 +2190,11 @@ void MainWindow::autoBanConnectedPeer(const QString &ip)
     LogMsg(QCoreApplication::translate("PeerListWidget", "Peer \"%1\" is manually banned").arg(ip));
     BanCounter::addBanned(1);
 
-    showBanNotification(tr("%1 from %2 banned").arg(ip, Net::GeoIPManager::CountryName(countryCode))
-            , tr("Today: %1").arg(BanCounter::bannedToday()));
+    if (!isAutoBanMuted())
+    {
+        showBanNotification(tr("%1 from %2 banned").arg(ip, Net::GeoIPManager::CountryName(countryCode))
+                , tr("Today: %1").arg(BanCounter::bannedToday()));
+    }
 }
 
 void MainWindow::showBanNotification(const QString &message, const QString &footer)

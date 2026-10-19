@@ -40,6 +40,7 @@
 #include "windowstate.h"
 
 class QCloseEvent;
+class QCheckBox;
 class QComboBox;
 class QFrame;
 class QFileSystemWatcher;
@@ -210,8 +211,9 @@ private:
     void showFiltersSidebar(bool show);
     void applyTransferListFilter();
     void populateCountryComboBox();
-    void banPeersFromCheckedCountries();
+    void banPeersFromCheckedCountries(bool byAutoBan = false);
     void autoBanConnectedPeer(const QString &ip);
+    bool isAutoBanMuted() const;
     void showBanNotification(const QString &message, const QString &footer = {});
     void refreshWindowTitle();
     void refreshTrayIconTooltip();
@@ -261,6 +263,7 @@ private:
     CountryComboBox *m_countryComboBox = nullptr;
     QPushButton *m_banCountryButton = nullptr;
     QPushButton *m_autoBanButton = nullptr;
+    QCheckBox *m_autoBanMuteCheckBox = nullptr;
     QSet<QString> m_autoBanCountryCodes;
     QPointer<QFrame> m_banNotification;
     bool m_banInProgress = false;
@@ -279,6 +282,7 @@ private:
     SettingValue<bool> m_storeExecutionLogEnabled;
     SettingValue<bool> m_storeDownloadTrackerFavicon;
     SettingValue<QStringList> m_storeBanCheckedCountries;
+    SettingValue<bool> m_storeAutoBanMuted;
     CachedSettingValue<Log::MsgTypes> m_storeExecutionLogTypes;
 
 #if defined(Q_OS_WIN) || defined(Q_OS_MACOS)

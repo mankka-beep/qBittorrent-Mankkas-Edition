@@ -194,6 +194,8 @@ inline QSet<QString> defaultUIThemeIcons()
         u"set-location"_s,
         u"slow"_s,
         u"slow_off"_s,
+        u"speaker"_s,
+        u"speaker-muted"_s,
         u"speedometer"_s,
         u"stalledDL"_s,
         u"stalledUP"_s,
