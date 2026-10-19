@@ -7,7 +7,7 @@ statistics.
 > **This is not the official qBittorrent.** It is not affiliated with or endorsed by the
 > qBittorrent project. Please don't report problems with this edition to them.
 
-Current version: **v1.2.0**, based on qBittorrent v5.4.0alpha1.
+Current version: **v1.6.3**, based on qBittorrent v5.4.0alpha1.
 
 ## Why I made this version?
 
@@ -34,11 +34,16 @@ Mankka
 - **Country list** with checkboxes and flags: choose the countries whose peers you want to ban.
 - **Ban** button: bans all connected peers from the checked countries at once.
 - **Auto Ban** (red/green): bans peers from the checked countries the moment they connect.
-- **Ban result box** in the lower left corner with a **"Today"** counter of bans.
-- **Total bans** window: banned IPs per country, with **Unban** for whole countries.
+- **Ban result box** in the lower right corner with a **"Today"** counter of bans. It never
+  takes the focus from the window you are working in.
+- **Mute** checkbox (speaker) inside the Auto Ban button: hides Auto Ban's result boxes.
+- **Total Bans** window: banned IPs per country, with **Unban** for whole countries, and how
+  many peers your IP filter has blocked today.
 - **Bans only apply to seeding torrents**; downloads can use every available peer.
 - **No confirmation** when banning peers from the Peers tab.
 - **Select All** toolbar button.
+- **"(nn Peers)"** in the status bar: how many peers you are uploading to right now.
+- **"From Me"** column in the Peers tab: how much of the torrent each peer has downloaded from you.
 - **Lime green arrows** for torrents that are uploading right now, and a **Progress bar
   showing the peers' progress** while seeding (sortable).
 - **Country flags** (with country names on hover) after IP addresses in the Execution Log
@@ -81,8 +86,6 @@ Good to know:
   a finished release.
 - Country detection uses the free IP to Country Lite database by
   [DB-IP](https://db-ip.com/) (CC BY 4.0).
-- Much of this edition was written with the help of Claude, an AI assistant, and
-  reviewed and tested by me.
 - Provided as is, without warranty.
 
 ## Feedback, ideas and problems

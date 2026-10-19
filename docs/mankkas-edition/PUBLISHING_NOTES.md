@@ -1,10 +1,10 @@
 # Publishing Mankka's Edition — notes and checklist
 
-Private notes for Mankka. Nothing has been published; everything is local. The official
+Private notes for Mankka. Published on GitHub as `mankka-beep/qBittorrent-Mankkas-Edition`. The official
 qBittorrent project must **never** receive this code (no pull requests, issues or
 patches) — publishing means your **own** repository only.
 
-This is practical guidance, not legal advice. Status as of 2026-10-18.
+This is practical guidance, not legal advice. Status as of 2026-10-19 (v1.6.3).
 
 ---
 
@@ -52,14 +52,11 @@ qBittorrent's source code is GPLv2-or-later; the compiled program is GPLv3-or-la
       tells trackers it is qBittorrent 5.4.0).
 - [x] The README and user guide say that bans only apply to seeding torrents.
 
-## 5. Code written with AI help
+## 5. Responsibility
 
-- [x] The README mentions that much of the edition was written with Claude; the commits
-      say so too ("Co-Authored-By: Claude").
 - [ ] You are responsible for the code you publish. Test each release yourself before
       uploading it.
-- [x] Never send anything to the official project (qBittorrent's `AGENTS.md` also asks for
-      no AI-written contributions).
+- [x] Never send anything to the official project.
 
 ## 6. The repository and releases
 
@@ -74,7 +71,7 @@ qBittorrent's source code is GPLv2-or-later; the compiled program is GPLv3-or-la
       `release\qBittorrent-Mankkas-Edition-vX.Y.Z-win64.zip`, tested to start on its own.
 - [x] The update check looks for the edition's own releases, and About links to the
       edition's page and Issues (v1.1.1).
-- [ ] Create your own repository on GitHub named exactly
+- [x] Create your own repository on GitHub named exactly
       **`mankka-beep/qBittorrent-Mankkas-Edition`** — the update check and About links use
       this name (`QBT_MOD_GITHUB_REPO` in `src/base/version.h.in`; change it and rebuild if
       you choose another name). **Not** a fork-contribution to the official project.
@@ -98,4 +95,3 @@ The questions that were used as a starting point, in case you want to add more l
 - What does the edition do better for you in daily use?
 - Who might find it useful, and who should rather stay with the official version?
 - What do you hope to add or improve next?
-- How did you build it (e.g. together with an AI assistant)?
