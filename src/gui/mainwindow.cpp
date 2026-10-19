@@ -341,13 +341,6 @@ MainWindow::MainWindow(IGUIApplication *app, const WindowState initialState, con
     m_autoBanButton = new QPushButton(tr("Auto Ban"), this);
     m_autoBanButton->setCheckable(true);
     m_autoBanButton->setToolTip(tr("Red: off. Green: bans peers from the checked countries as soon as they connect"));
-    // The right part of the button is kept free for the mute checkbox
-    m_autoBanButton->setStyleSheet(u"QPushButton { background-color: #c62828; color: white; border: 1px solid #8e0000;"
-            " border-radius: 4px; padding: 3px 50px 3px 10px; text-align: left; }"
-            " QPushButton:hover { background-color: #d84343; }"
-            " QPushButton:checked { background-color: #2e7d32; border-color: #1b5e20; }"
-            " QPushButton:checked:hover { background-color: #43a047; }"_s);
-
     // Mute checkbox inside the Auto Ban button: checked = no ban box for Auto Ban (speaker
     // with a cross), unchecked = ban boxes are shown (speaker with sound waves). Clicking it
     // only changes the mute; the rest of the button still turns Auto Ban on and off.
@@ -356,6 +349,18 @@ MainWindow::MainWindow(IGUIApplication *app, const WindowState initialState, con
     m_autoBanMuteCheckBox->setToolTip(tr("Mute Auto Ban: when checked, Auto Ban doesn't show the ban box"));
     m_autoBanMuteCheckBox->setIconSize({16, 16});
     m_autoBanMuteCheckBox->setChecked(m_storeAutoBanMuted.get(false));
+
+    // The button is exactly as wide as its text plus the checkbox: the right padding reserves
+    // the checkbox's own width, and the fixed size policy keeps the toolbar from stretching it
+    const int muteRightMargin = 6;
+    const int muteGap = 6;
+    const int muteReservedWidth = m_autoBanMuteCheckBox->sizeHint().width() + muteRightMargin + muteGap;
+    m_autoBanButton->setStyleSheet(u"QPushButton { background-color: #c62828; color: white; border: 1px solid #8e0000;"
+            " border-radius: 4px; padding: 3px %1px 3px 10px; text-align: left; }"
+            " QPushButton:hover { background-color: #d84343; }"
+            " QPushButton:checked { background-color: #2e7d32; border-color: #1b5e20; }"
+            " QPushButton:checked:hover { background-color: #43a047; }"_s.arg(muteReservedWidth));
+    m_autoBanButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     const auto updateMuteIcon = [this]
     {
         m_autoBanMuteCheckBox->setIcon(UIThemeManager::instance()->getIcon(
@@ -367,10 +372,10 @@ MainWindow::MainWindow(IGUIApplication *app, const WindowState initialState, con
         m_storeAutoBanMuted = muted;
         updateMuteIcon();
     });
+    // No stretch in this layout: a stretchable item would let the toolbar widen the button
     auto *autoBanButtonLayout = new QHBoxLayout(m_autoBanButton);
-    autoBanButtonLayout->setContentsMargins(0, 0, 6, 0);
-    autoBanButtonLayout->addStretch();
-    autoBanButtonLayout->addWidget(m_autoBanMuteCheckBox);
+    autoBanButtonLayout->setContentsMargins(0, 0, muteRightMargin, 0);
+    autoBanButtonLayout->addWidget(m_autoBanMuteCheckBox, 0, (Qt::AlignRight | Qt::AlignVCenter));
     connect(BitTorrent::Session::instance(), &BitTorrent::Session::peerConnected, this, &MainWindow::autoBanConnectedPeer);
 
     // Count the connections the IP filter blocks today ("Blocked today by IP filter" in the
