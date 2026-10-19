@@ -1,6 +1,6 @@
 # qBittorrent Mankka's Edition — User Guide
 
-Version **v1.3.0**, based on qBittorrent v5.4.0alpha1.
+Version **v1.4.0**, based on qBittorrent v5.4.0alpha1.
 
 Mankka's Edition is an unofficial, modified version of qBittorrent for Windows. It adds
 tools for blocking peers by country, quicker banning, ban statistics, and a few visual
@@ -167,6 +167,10 @@ Transfers tab), opens a window listing all your banned IP addresses **per countr
   the same number in alphabetical order).
 - IPs the database can't place are counted under **N/A**.
 - The bold line at the bottom shows the total, e.g. "Total: 11 329 bans in 87 countries".
+- Below it, **"Blocked today by IP filter: nnnn"** shows how many connections the IP filter
+  (your banned IP list) has refused today — the "IP filter" entries in the Blocked IPs log.
+  It's updated every 2 seconds while the window is open, is kept when you restart, and starts
+  again from 0 when the date changes.
 - **Unban** (lower left corner): select one or more countries (Ctrl/Shift for several) and
   press Unban to remove **all** banned IPs of those countries from the banned list at
   once. The list recounts immediately, and the Execution Log gets a line like "Unbanned 71
@@ -245,7 +249,7 @@ Open **View → Log** (the Execution Log at the bottom of the window):
 
 ## 12. Name, version and About
 
-- The window title shows **"qBittorrent v1.3.0 Mankka's Edition"**.
+- The window title shows **"qBittorrent v1.4.0 Mankka's Edition"**.
 - **Help → About** shows the edition name, the qBittorrent version it's based on, and
   "Modifications © 2026 Mankka". Its links lead to the qBittorrent home page, the
   edition's own GitHub page, and the edition's bug tracker (Issues).
@@ -296,6 +300,7 @@ Besides qBittorrent's normal settings, the edition stores these in
 |---|---|
 | `[GUI] BanCountries\Checked` | Your checked countries |
 | `[GUI] BanCountries\TodayDate`, `BanCountries\TodayCount` | The "Today" ban counter |
+| `[GUI] BanCountries\BlockedTodayDate`, `BanCountries\BlockedTodayCount` | "Blocked today by IP filter" |
 | `[TotalBansDialog] Size` | Size of the Total bans window |
 
 The banned IPs themselves are stored in qBittorrent's normal setting (`[State] BannedIPs`).

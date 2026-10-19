@@ -46,6 +46,17 @@ namespace
         return SettingValue<int> {u"GUI/BanCountries/TodayCount"_s};
     }
 
+    // The same for the connections blocked by the IP filter
+    SettingValue<QString> storedBlockedDate()
+    {
+        return SettingValue<QString> {u"GUI/BanCountries/BlockedTodayDate"_s};
+    }
+
+    SettingValue<int> storedBlockedCount()
+    {
+        return SettingValue<int> {u"GUI/BanCountries/BlockedTodayCount"_s};
+    }
+
     QString today()
     {
         return QDate::currentDate().toString(Qt::ISODate);
@@ -67,4 +78,21 @@ int BanCounter::bannedToday()
     if (storedDate().get() != today())
         return 0;
     return storedCount().get(0);
+}
+
+void BanCounter::addBlockedByIPFilter(const int count)
+{
+    if (count <= 0)
+        return;
+
+    const int total = blockedByIPFilterToday() + count;
+    storedBlockedDate() = today();
+    storedBlockedCount() = total;
+}
+
+int BanCounter::blockedByIPFilterToday()
+{
+    if (storedBlockedDate().get() != today())
+        return 0;
+    return storedBlockedCount().get(0);
 }

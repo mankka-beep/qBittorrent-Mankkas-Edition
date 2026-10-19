@@ -42,6 +42,8 @@
 #include <QClipboard>
 #include <QCloseEvent>
 #include <QComboBox>
+#include <QDate>
+#include <QDateTime>
 #include <QDebug>
 #include <QDesktopServices>
 #include <QFileDialog>
@@ -340,6 +342,28 @@ MainWindow::MainWindow(IGUIApplication *app, const WindowState initialState, con
             " QPushButton:checked { background-color: #2e7d32; border-color: #1b5e20; }"
             " QPushButton:checked:hover { background-color: #43a047; }"_s);
     connect(BitTorrent::Session::instance(), &BitTorrent::Session::peerConnected, this, &MainWindow::autoBanConnectedPeer);
+
+    // Count the connections the IP filter blocks today ("Blocked today by IP filter" in the
+    // Total bans window). Blocks logged before this window was created are counted first.
+    const auto isBlockedByIPFilterToday = [](const Log::Peer &peer)
+    {
+        static const QString ipFilterReason = QCoreApplication::translate("BitTorrent::SessionImpl"
+                , "IP filter", "this peer was blocked. Reason: IP filter.");
+        return peer.blocked && (peer.reason == ipFilterReason)
+                && (QDateTime::fromSecsSinceEpoch(peer.timestamp).date() == QDate::currentDate());
+    };
+    int blockedBeforeStart = 0;
+    for (const Log::Peer &peer : asConst(Logger::instance()->getPeers()))
+    {
+        if (isBlockedByIPFilterToday(peer))
+            ++blockedBeforeStart;
+    }
+    BanCounter::addBlockedByIPFilter(blockedBeforeStart);
+    connect(Logger::instance(), &Logger::newLogPeer, this, [isBlockedByIPFilterToday](const Log::Peer &peer)
+    {
+        if (isBlockedByIPFilterToday(peer))
+            BanCounter::addBlockedByIPFilter(1);
+    });
     connect(m_autoBanButton, &QPushButton::toggled, this, [this](const bool enabled)
     {
         // New peer connections are only reported while Auto Ban is on

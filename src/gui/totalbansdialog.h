@@ -51,9 +51,11 @@ public:
 private:
     void populate();
     void unbanSelectedCountries();
+    void updateBlockedTodayLabel();
 
     QTreeWidget *m_list = nullptr;
     QLabel *m_totalLabel = nullptr;
+    QLabel *m_blockedTodayLabel = nullptr;
     QPushButton *m_unbanButton = nullptr;
     SettingValue<QSize> m_storeDialogSize;
 };

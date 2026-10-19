@@ -27,11 +27,14 @@
 
 #pragma once
 
-// Counts the peers banned today: with the country Ban button and from the peer list.
-// The count is kept in the settings, so it survives restarts, and starts again from 0
-// when the date changes.
+// Counts the peers banned today (with the country Ban button, Auto Ban and from the peer list),
+// and the connections the IP filter blocked today. The counts are kept in the settings, so
+// they survive restarts, and start again from 0 when the date changes.
 namespace BanCounter
 {
     void addBanned(int count);
     int bannedToday();
+
+    void addBlockedByIPFilter(int count);
+    int blockedByIPFilterToday();
 }

@@ -28,6 +28,7 @@
 #include "totalbansdialog.h"
 
 #include <algorithm>
+#include <chrono>
 
 #include <QDialogButtonBox>
 #include <QHash>
@@ -39,6 +40,7 @@
 #include <QLocale>
 #include <QPushButton>
 #include <QSet>
+#include <QTimer>
 #include <QTreeWidget>
 #include <QVBoxLayout>
 
@@ -46,7 +48,10 @@
 #include "base/global.h"
 #include "base/logger.h"
 #include "base/net/geoipmanager.h"
+#include "bancounter.h"
 #include "uithememanager.h"
+
+using namespace std::chrono_literals;
 
 #define SETTINGS_KEY(name) u"TotalBansDialog/" name
 
@@ -69,6 +74,7 @@ TotalBansDialog::TotalBansDialog(QWidget *parent)
     : QDialog(parent)
     , m_list {new QTreeWidget(this)}
     , m_totalLabel {new QLabel(this)}
+    , m_blockedTodayLabel {new QLabel(this)}
     , m_unbanButton {new QPushButton(tr("Unban"), this)}
     , m_storeDialogSize {SETTINGS_KEY(u"Size"_s)}
 {
@@ -88,6 +94,14 @@ TotalBansDialog::TotalBansDialog(QWidget *parent)
     QFont boldFont = m_totalLabel->font();
     boldFont.setBold(true);
     m_totalLabel->setFont(boldFont);
+    m_blockedTodayLabel->setFont(boldFont);
+    m_blockedTodayLabel->setToolTip(tr("Connections the IP filter (the banned IP list) refused today"));
+
+    // The number of blocks keeps changing, so it is refreshed while the window is open
+    auto *blockedTodayTimer = new QTimer(this);
+    connect(blockedTodayTimer, &QTimer::timeout, this, &TotalBansDialog::updateBlockedTodayLabel);
+    blockedTodayTimer->start(2s);
+    updateBlockedTodayLabel();
 
     m_unbanButton->setToolTip(tr("Remove all banned IP addresses of the selected countries from the banned IP list"));
     m_unbanButton->setEnabled(false);
@@ -109,6 +123,7 @@ TotalBansDialog::TotalBansDialog(QWidget *parent)
     auto *layout = new QVBoxLayout(this);
     layout->addWidget(m_list);
     layout->addWidget(m_totalLabel);
+    layout->addWidget(m_blockedTodayLabel);
     layout->addLayout(buttonLayout);
 
     populate();
@@ -121,6 +136,12 @@ TotalBansDialog::TotalBansDialog(QWidget *parent)
 TotalBansDialog::~TotalBansDialog()
 {
     m_storeDialogSize = size();
+}
+
+void TotalBansDialog::updateBlockedTodayLabel()
+{
+    m_blockedTodayLabel->setText(tr("Blocked today by IP filter: %1")
+            .arg(QLocale().toString(BanCounter::blockedByIPFilterToday())));
 }
 
 void TotalBansDialog::populate()
