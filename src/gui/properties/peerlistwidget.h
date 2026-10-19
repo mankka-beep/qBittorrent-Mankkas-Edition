@@ -72,6 +72,8 @@ public:
         DOWNLOADING_PIECE,
         CONTRIBUTION,
         IP_HIDDEN,
+        // Added after the original columns so that saved column layouts keep working
+        FROM_ME,
 
         COL_COUNT
     };

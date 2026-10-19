@@ -1,6 +1,6 @@
 # qBittorrent Mankka's Edition — User Guide
 
-Version **v1.4.0**, based on qBittorrent v5.4.0alpha1.
+Version **v1.5.0**, based on qBittorrent v5.4.0alpha1.
 
 Mankka's Edition is an unofficial, modified version of qBittorrent for Windows. It adds
 tools for blocking peers by country, quicker banning, ban statistics, and a few visual
@@ -156,6 +156,16 @@ They are logged as before and added to the "Today" counter.
 > immediately. Bans can be undone in Options → Connection → IP Filtering, or with
 > [Unban](#8-total-bans-and-unban).
 
+**"From Me" column:** the Peers tab has an extra column, **From Me**, showing how much
+of the torrent the peer has downloaded **from you**, as a percentage of the torrent's
+total size. Example: a peer that has downloaded 450 MB from you of a 900 MB torrent shows
+**50.0%**. It works like the other columns: sort by it, hide or show it (right-click the
+column headers), move and resize it. It was added at the far right, so your existing
+column layout stays as it was.
+
+The value counts what you have sent to that peer during its current connection (the same
+data as the "Uploaded" column); if the peer reconnects, it starts again from 0.
+
 ---
 
 ## 8. Total bans and Unban
@@ -249,7 +259,7 @@ Open **View → Log** (the Execution Log at the bottom of the window):
 
 ## 12. Name, version and About
 
-- The window title shows **"qBittorrent v1.4.0 Mankka's Edition"**.
+- The window title shows **"qBittorrent v1.5.0 Mankka's Edition"**.
 - **Help → About** shows the edition name, the qBittorrent version it's based on, and
   "Modifications © 2026 Mankka". Its links lead to the qBittorrent home page, the
   edition's own GitHub page, and the edition's bug tracker (Issues).

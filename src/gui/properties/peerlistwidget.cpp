@@ -127,6 +127,9 @@ PeerListWidget::PeerListWidget(PropertiesWidget *parent)
     m_listModel->setHeaderData(PeerListColumns::RELEVANCE, Qt::Horizontal, tr("Relevance", "i.e: How relevant this peer is to us. How many pieces it has that we don't."));
     m_listModel->setHeaderData(PeerListColumns::CONTRIBUTION, Qt::Horizontal, tr("Contribution", "i.e: How much of this peer's current progress was provided by us"));
     m_listModel->setHeaderData(PeerListColumns::DOWNLOADING_PIECE, Qt::Horizontal, tr("Files", "i.e. files that are being downloaded right now"));
+    m_listModel->setHeaderData(PeerListColumns::FROM_ME, Qt::Horizontal, tr("From Me", "i.e: How much of the torrent this peer has downloaded from us"));
+    m_listModel->setHeaderData(PeerListColumns::FROM_ME, Qt::Horizontal, tr("Data this peer has downloaded from you, as a percentage of the torrent's total size")
+            , Qt::ToolTipRole);
     // Set header text alignment
     m_listModel->setHeaderData(PeerListColumns::PORT, Qt::Horizontal, QVariant(Qt::AlignRight | Qt::AlignVCenter), Qt::TextAlignmentRole);
     m_listModel->setHeaderData(PeerListColumns::PROGRESS, Qt::Horizontal, QVariant(Qt::AlignRight | Qt::AlignVCenter), Qt::TextAlignmentRole);
@@ -136,6 +139,7 @@ PeerListWidget::PeerListWidget(PropertiesWidget *parent)
     m_listModel->setHeaderData(PeerListColumns::TOT_UP, Qt::Horizontal, QVariant(Qt::AlignRight | Qt::AlignVCenter), Qt::TextAlignmentRole);
     m_listModel->setHeaderData(PeerListColumns::RELEVANCE, Qt::Horizontal, QVariant(Qt::AlignRight | Qt::AlignVCenter), Qt::TextAlignmentRole);
     m_listModel->setHeaderData(PeerListColumns::CONTRIBUTION, Qt::Horizontal, QVariant(Qt::AlignRight | Qt::AlignVCenter), Qt::TextAlignmentRole);
+    m_listModel->setHeaderData(PeerListColumns::FROM_ME, Qt::Horizontal, QVariant(Qt::AlignRight | Qt::AlignVCenter), Qt::TextAlignmentRole);
     // Proxy model to support sorting without actually altering the underlying model
     m_proxyModel = new PeerListSortModel(this);
     m_proxyModel->setDynamicSortFilter(true);
@@ -156,10 +160,11 @@ PeerListWidget::PeerListWidget(PropertiesWidget *parent)
     if (!m_resolveCountries)
         hideColumn(PeerListColumns::COUNTRY);
     // Ensure that at least one column is visible at all times
+    // (IP_HIDDEN is an internal column; columns added later, like FROM_ME, come after it)
     bool atLeastOne = false;
-    for (int i = 0; i < PeerListColumns::IP_HIDDEN; ++i)
+    for (int i = 0; i < PeerListColumns::COL_COUNT; ++i)
     {
-        if (!isColumnHidden(i))
+        if ((i != PeerListColumns::IP_HIDDEN) && !isColumnHidden(i))
         {
             atLeastOne = true;
             break;
@@ -169,10 +174,11 @@ PeerListWidget::PeerListWidget(PropertiesWidget *parent)
         setColumnHidden(PeerListColumns::IP, false);
     // To also mitigate the above issue, we have to resize each column when
     // its size is 0, because explicitly 'showing' the column isn't enough
-    // in the above scenario.
-    for (int i = 0; i < PeerListColumns::IP_HIDDEN; ++i)
+    // in the above scenario. This also gives a newly added column (not yet in
+    // the saved layout) its width.
+    for (int i = 0; i < PeerListColumns::COL_COUNT; ++i)
     {
-        if ((columnWidth(i) <= 0) && !isColumnHidden(i))
+        if ((i != PeerListColumns::IP_HIDDEN) && (columnWidth(i) <= 0) && !isColumnHidden(i))
             resizeColumnToContents(i);
     }
     // Context menu
@@ -208,8 +214,10 @@ void PeerListWidget::displayColumnHeaderMenu()
     menu->setTitle(tr("Column visibility"));
     menu->setToolTipsVisible(true);
 
-    for (int i = 0; i < PeerListColumns::IP_HIDDEN; ++i)
+    for (int i = 0; i < PeerListColumns::COL_COUNT; ++i)
     {
+        if (i == PeerListColumns::IP_HIDDEN)
+            continue;
         if ((i == PeerListColumns::COUNTRY) && !Preferences::instance()->resolvePeerCountries())
             continue;
 
@@ -537,6 +545,14 @@ void PeerListWidget::updatePeer(const int row, const BitTorrent::Torrent *torren
     }
     setModelData(m_listModel, row, PeerListColumns::CONTRIBUTION, (Utils::String::fromDouble((contribution * 100), 1) + u'%')
             , contribution, intDataTextAlignment);
+
+    // "From Me": what this peer has downloaded from us, compared to the torrent's total size
+    // (e.g. 450 MB uploaded to the peer of a 900 MB torrent = 50%)
+    const qlonglong torrentTotalSize = torrent->totalSize();
+    const qreal fromMe = (torrentTotalSize > 0) ? (static_cast<qreal>(totalUpload) / torrentTotalSize) : 0;
+    const QString fromMeString = (hideZeroValues && (totalUpload <= 0))
+            ? QString() : (Utils::String::fromDouble((fromMe * 100), 1) + u'%');
+    setModelData(m_listModel, row, PeerListColumns::FROM_ME, fromMeString, fromMe, intDataTextAlignment);
 
     const PathList filePaths = torrent->info().filesForPiece(peer.downloadingPieceIndex());
     QStringList downloadingFiles;
