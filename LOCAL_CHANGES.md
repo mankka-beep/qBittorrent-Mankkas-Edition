@@ -23,6 +23,7 @@ change the version.
 
 | Version | Changes | Based on qBittorrent |
 |---|---|---|
+| v1.2.1 | 28 | v5.4.0alpha1 |
 | v1.2.0 | 27 | v5.4.0alpha1 |
 | v1.1.2 | 26 | v5.4.0alpha1 |
 | v1.1.1 | 24–25 (25: packaging only) | v5.4.0alpha1 |
@@ -46,6 +47,20 @@ To see exactly what a change did: `git show <commit>`.
 To get the official program back completely: `git switch master`, then rebuild.
 
 ## Changes (newest first)
+
+### 28. Ban box never takes the focus, lower right corner, version v1.2.1 — commit `40691e0fb` (2026-10-19)
+
+The box shown after Ban / Auto Ban no longer affects the window you're working in. It
+used to belong to qBittorrent's main window, so showing or closing it could bring
+qBittorrent to the front. Now it has no owner window, can't be activated
+(`Qt::WindowDoesNotAcceptFocus`, shown without activating) and lets mouse clicks through
+(`Qt::WindowTransparentForInput`). It appears in the **lower right** corner above the
+taskbar (was lower left), on the screen of qBittorrent's window, or on the main screen
+while qBittorrent is hidden in the tray.
+
+- Changed: `src/gui/mainwindow.cpp`, `src/base/version.h.in` (v1.2.1),
+  `docs/mankkas-edition/USER_GUIDE.md`
+- Undo with `git revert 40691e0fb`.
 
 ### 27. English is the default language, version v1.2.0 — commit `e9b89f6d9` (2026-10-18)
 
