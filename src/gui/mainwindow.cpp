@@ -66,6 +66,7 @@
 #include <QSplitter>
 #include <QStatusBar>
 #include <QString>
+#include <QStyle>
 #include <QTimer>
 #include <QToolTip>
 #include <QVBoxLayout>
@@ -349,24 +350,31 @@ MainWindow::MainWindow(IGUIApplication *app, const WindowState initialState, con
     m_autoBanMuteCheckBox->setToolTip(tr("Mute Auto Ban: when checked, Auto Ban doesn't show the ban box"));
     m_autoBanMuteCheckBox->setIconSize({16, 16});
     m_autoBanMuteCheckBox->setChecked(m_storeAutoBanMuted.get(false));
-
-    // The button is exactly as wide as its text plus the checkbox: the right padding reserves
-    // the checkbox's own width, and the fixed size policy keeps the toolbar from stretching it
-    const int muteRightMargin = 6;
-    const int muteGap = 6;
-    const int muteReservedWidth = m_autoBanMuteCheckBox->sizeHint().width() + muteRightMargin + muteGap;
-    m_autoBanButton->setStyleSheet(u"QPushButton { background-color: #c62828; color: white; border: 1px solid #8e0000;"
-            " border-radius: 4px; padding: 3px %1px 3px 10px; text-align: left; }"
-            " QPushButton:hover { background-color: #d84343; }"
-            " QPushButton:checked { background-color: #2e7d32; border-color: #1b5e20; }"
-            " QPushButton:checked:hover { background-color: #43a047; }"_s.arg(muteReservedWidth));
-    m_autoBanButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     const auto updateMuteIcon = [this]
     {
         m_autoBanMuteCheckBox->setIcon(UIThemeManager::instance()->getIcon(
                 (m_autoBanMuteCheckBox->isChecked() ? u"speaker-muted"_s : u"speaker"_s)));
     };
     updateMuteIcon();
+
+    // The button is exactly as wide as its text plus the checkbox: the checkbox is sized to its
+    // parts (tick box, spacing, speaker icon) because its own size hint adds unused space, the
+    // right padding reserves that width, and the fixed size policy keeps the toolbar from
+    // stretching the button
+    const QStyle *muteStyle = m_autoBanMuteCheckBox->style();
+    const int muteCheckBoxWidth = muteStyle->pixelMetric(QStyle::PM_IndicatorWidth, nullptr, m_autoBanMuteCheckBox)
+            + muteStyle->pixelMetric(QStyle::PM_CheckBoxLabelSpacing, nullptr, m_autoBanMuteCheckBox)
+            + m_autoBanMuteCheckBox->iconSize().width() + 2;
+    m_autoBanMuteCheckBox->setFixedWidth(muteCheckBoxWidth);
+    const int muteRightMargin = 6;
+    const int muteGap = 8;
+    const int muteReservedWidth = muteCheckBoxWidth + muteRightMargin + muteGap;
+    m_autoBanButton->setStyleSheet(u"QPushButton { background-color: #c62828; color: white; border: 1px solid #8e0000;"
+            " border-radius: 4px; padding: 3px %1px 3px 10px; text-align: left; }"
+            " QPushButton:hover { background-color: #d84343; }"
+            " QPushButton:checked { background-color: #2e7d32; border-color: #1b5e20; }"
+            " QPushButton:checked:hover { background-color: #43a047; }"_s.arg(muteReservedWidth));
+    m_autoBanButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     connect(m_autoBanMuteCheckBox, &QCheckBox::toggled, this, [this, updateMuteIcon](const bool muted)
     {
         m_storeAutoBanMuted = muted;
