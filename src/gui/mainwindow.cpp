@@ -273,7 +273,7 @@ MainWindow::MainWindow(IGUIApplication *app, const WindowState initialState, con
     m_columnFilterComboBox = new QComboBox;
 
     // Shows the manually banned IP addresses per country
-    auto *totalBansButton = new QPushButton(tr("Total bans"));
+    auto *totalBansButton = new QPushButton(tr("Total Bans"));
     totalBansButton->setToolTip(tr("Show how many banned IP addresses there are per country"));
     connect(totalBansButton, &QPushButton::clicked, this, [this]
     {
@@ -357,14 +357,21 @@ MainWindow::MainWindow(IGUIApplication *app, const WindowState initialState, con
     };
     updateMuteIcon();
 
+    // White tick box (with a dark tick when checked), so it stands out on the red and green button
+    const int muteIndicatorSize = 12;  // inside a 1 px border
+    const int muteSpacing = 4;
+    m_autoBanMuteCheckBox->setStyleSheet(u"QCheckBox { spacing: %2px; background: transparent; }"
+            " QCheckBox::indicator { width: %1px; height: %1px; background-color: white;"
+            " border: 1px solid #3c3c3c; border-radius: 2px; }"
+            " QCheckBox::indicator:hover { border-color: #000000; }"
+            " QCheckBox::indicator:checked { image: url(:/icons/checkbox-checkmark.svg); }"_s
+            .arg(muteIndicatorSize).arg(muteSpacing));
+
     // The button is exactly as wide as its text plus the checkbox: the checkbox is sized to its
-    // parts (tick box, spacing, speaker icon) because its own size hint adds unused space, the
-    // right padding reserves that width, and the fixed size policy keeps the toolbar from
-    // stretching the button
-    const QStyle *muteStyle = m_autoBanMuteCheckBox->style();
-    const int muteCheckBoxWidth = muteStyle->pixelMetric(QStyle::PM_IndicatorWidth, nullptr, m_autoBanMuteCheckBox)
-            + muteStyle->pixelMetric(QStyle::PM_CheckBoxLabelSpacing, nullptr, m_autoBanMuteCheckBox)
-            + m_autoBanMuteCheckBox->iconSize().width() + 2;
+    // parts (tick box with border, spacing, speaker icon) because its own size hint adds unused
+    // space, the right padding reserves that width, and the fixed size policy keeps the
+    // toolbar from stretching the button
+    const int muteCheckBoxWidth = (muteIndicatorSize + 2) + muteSpacing + m_autoBanMuteCheckBox->iconSize().width() + 2;
     m_autoBanMuteCheckBox->setFixedWidth(muteCheckBoxWidth);
     const int muteRightMargin = 6;
     const int muteGap = 8;

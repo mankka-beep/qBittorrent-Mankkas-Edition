@@ -55,7 +55,7 @@
 // - MAJOR + 1 (MINOR and PATCH back to 0): moving to a newer official qBittorrent
 //   release, or a big rework
 // Each version is also recorded in LOCAL_CHANGES.md.
-#define QBT_MOD_VERSION "v1.6.2"
+#define QBT_MOD_VERSION "v1.6.3"
 
 // GitHub repository of the edition ("owner/name"). The program's update check looks for
 // new releases here (never at the official qBittorrent), and the About dialog links to it.

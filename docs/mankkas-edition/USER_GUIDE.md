@@ -1,6 +1,6 @@
 # qBittorrent Mankka's Edition — User Guide
 
-Version **v1.6.2**, based on qBittorrent v5.4.0alpha1.
+Version **v1.6.3**, based on qBittorrent v5.4.0alpha1.
 
 Mankka's Edition is an unofficial, modified version of qBittorrent for Windows. It adds
 tools for blocking peers by country, quicker banning, ban statistics, and a few visual
@@ -38,7 +38,7 @@ Next to the usual toolbar buttons you'll find, from left to right:
 | **Country list** | Choose the countries whose peers you want to ban |
 | **Ban** | Bans the connected peers from the checked countries, once |
 | **Auto Ban** (red/green) | Keeps banning peers from the checked countries as soon as they connect |
-| **Total bans** (next to "Filter torrents...") | Shows your banned IPs per country, with an Unban button |
+| **Total Bans** (next to "Filter torrents...") | Shows your banned IPs per country, with an Unban button |
 
 Countries are recognised with the free *IP to Country Lite* database by DB-IP, which
 qBittorrent downloads and updates by itself.
@@ -183,7 +183,7 @@ data as the "Uploaded" column); if the peer reconnects, it starts again from 0.
 
 ## 8. Total bans and Unban
 
-The **Total bans** button, just left of the "Filter torrents..." box (shown on the
+The **Total Bans** button, just left of the "Filter torrents..." box (shown on the
 Transfers tab), opens a window listing all your banned IP addresses **per country**:
 
 - Each row shows the flag, country and number of bans, **most bans first** (countries with
@@ -272,7 +272,7 @@ Open **View → Log** (the Execution Log at the bottom of the window):
 
 ## 12. Name, version and About
 
-- The window title shows **"qBittorrent v1.6.2 Mankka's Edition"**.
+- The window title shows **"qBittorrent v1.6.3 Mankka's Edition"**.
 - **Help → About** shows the edition name, the qBittorrent version it's based on, and
   "Modifications © 2026 Mankka". Its links lead to the qBittorrent home page, the
   edition's own GitHub page, and the edition's bug tracker (Issues).
