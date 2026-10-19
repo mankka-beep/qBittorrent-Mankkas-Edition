@@ -2176,14 +2176,15 @@ void MainWindow::showBanNotification(const QString &message, const QString &foot
         layout->addWidget(footerLabel);
     }
 
-    // Shown in the lower right corner of the screen (above the taskbar): the screen qBittorrent's
-    // window is on, or the main screen while qBittorrent is hidden in the tray
+    // Shown in the lower right corner of the screen, well clear of the taskbar: the screen
+    // qBittorrent's window is on, or the main screen while qBittorrent is hidden in the tray
     notification->adjustSize();
-    const int screenMargin = 16;
+    const int rightMargin = 16;
+    const int bottomMargin = 64;
     const QScreen *notificationScreen = (isVisible() && !isMinimized()) ? screen() : QGuiApplication::primaryScreen();
     const QRect screenArea = notificationScreen->availableGeometry();
-    notification->move((screenArea.right() + 1 - screenMargin - notification->width())
-            , (screenArea.bottom() + 1 - screenMargin - notification->height()));
+    notification->move((screenArea.right() + 1 - rightMargin - notification->width())
+            , (screenArea.bottom() + 1 - bottomMargin - notification->height()));
     notification->show();
 
     QTimer::singleShot(3s, notification, &QWidget::close);
