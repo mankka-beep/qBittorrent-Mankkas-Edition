@@ -23,6 +23,7 @@ change the version.
 
 | Version | Changes | Based on qBittorrent |
 |---|---|---|
+| v1.6.1 | 34 | v5.4.0alpha1 |
 | v1.6.0 | 33 | v5.4.0alpha1 |
 | v1.5.0 | 32 | v5.4.0alpha1 |
 | v1.4.0 | 31 | v5.4.0alpha1 |
@@ -52,6 +53,18 @@ To see exactly what a change did: `git show <commit>`.
 To get the official program back completely: `git switch master`, then rebuild.
 
 ## Changes (newest first)
+
+### 34. Auto Ban button only as wide as needed, version v1.6.1 — commit `c7d689a4e` (2026-10-19)
+
+Fix for change 33: the Auto Ban button was stretched very wide, because the layout holding
+the mute checkbox had a stretchable gap, which the toolbar treats as "may grow". The
+checkbox is now aligned right without a stretch, the button's size policy is fixed, and its
+right padding is the checkbox's measured width plus small margins. The button is as wide as
+"Auto Ban" plus the checkbox and speaker.
+
+- Changed: `src/gui/mainwindow.cpp`, `src/base/version.h.in` (v1.6.1),
+  `docs/mankkas-edition/USER_GUIDE.md` (version only)
+- Undo with `git revert c7d689a4e`.
 
 ### 33. Mute checkbox in the Auto Ban button, version v1.6.0 — commit `f0debdcb0` (2026-10-19)
 
